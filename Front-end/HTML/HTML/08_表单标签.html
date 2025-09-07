@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- form表单属性：action 要将数据提交到的地址 -->
+    <form action="https:/www.baidu.com/s"  target="_blank"  method="get">
+        <input type="text" name="wd">
+        <button>按钮</button>
+
+        <!-- 账号密码输入框 -->
+        账号:<input type="text" name="accout" value="xxx" maxlength="10"><br>
+        密码:<input type="password"  name="pwd"  ><br>
+
+        <!-- 勾选框 -->
+         <!-- name和value属性必须写，因为上传的键值对信息就靠name和value知道 -->
+          <!-- 相同的name的值区分组别，这样单选框才能在一组数据中进行单选 -->
+         性别:
+         <!-- 单选框 -->
+          <!-- checked属性代表默认勾选 -->
+         <input type="radio" name="gender" value="male" chenked>男
+         <input type="radio" name="gender" value="female">女<br>
+         爱好:
+         <input type="checkbox" name="hobby" value="smoke">抽烟
+         <input type="checkbox" name="hobby" value="drink">喝酒
+         <input type="checkbox" name="hobby" value="perm">烫头<br>
+
+         <!-- 隐藏域 -->
+          <!-- 隐藏要上传的某些数据 -->
+          <input type="hidden" name="tag" value="xxx">
+
+        <!-- 按钮 -->
+         <!-- 提交按钮 -->
+         <!-- input作为按钮时不要写name，value的值是显示在页面上的文字，不是要携带上传的值 -->
+         <button>提交</button> <!--等价于--> <input  type="submit" value="提交">
+         <!-- button默认type=“submit” -->
+          <!-- 重置按钮 -->
+        <button type="reset">重置</button> <!--等价于--> <input  type="reset" value="重置">
+        <!-- 普通按钮，可用于绑定事件 --> <!-- 禁用表单属性disabled -->
+         <button type="button" disabled>普通按钮</button>
+
+         <!-- 文本域 -->
+          其他：
+          <textarea name="other"></textarea><br>
+
+          <!-- 下拉框 -->
+           籍贯：
+           <!-- selected默认，最好写上value要回传的数据，不然回传显示的数据 -->
+           <select name="place">
+             <option value="1">河北</option>
+             <option value="2" selected>上海</option>
+             <option value="3">广东</option>
+           </select>
+
+           <!-- label标签：希望点击文字也能在输入框获取焦点（可在输入框进行输入） -->
+            <!-- label如何进行文字和空间之间关联？ -->
+           <!-- 方法1：label的for属性和input的id属性进行关联 -->
+            <label for="zh">账号:</label>
+             <input id="zh" type="text" name="accout" value="xxx" maxlength="10"><br>    
+           <!-- 方法2：用lable包裹整个 -->
+            <label>
+                账号:
+                <input type="text" name="accout" value="xxx" maxlength="10"><br>
+            </label>
+
+            <!-- 信息分组：把不同类的信息框起来 -->
+            <fieldset>
+                <legend>分类的名字</legend>
+                <botton></botton>
+            </fieldset>
+
+
+              
+
+
+
+    </form>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .pcss{
+            margin-top: 500px;
+        }
+    </style>
+</head>
+ <!-- 超链接标签 -->
+
+<body>
+    <!-- 1.跳转网址 -->
+     <a href="网址" target="_blank">跳转</a>
+     <!--target="_blank"新页签打开   原页签打开target="_self"（默认值）  -->
+
+
+     <!-- 2.跳转文件 -->
+      <!-- 浏览器可以直接打开的文件格式，可以点击之后直接跳转 -->
+    <a href=".jpg">jpg</a>
+    <a href=".mp4">mp4</a>
+    <a href=".gif">gif</a>
+    <a href=".pdf">pdf</a>
+    <!-- 浏览器不可以直接打开的文件格式，浏览器会直接下载  -->
+    <a href=".zip">zip</a>
+    <!-- 浏览器可以直接打开的文件格式，强制浏览器直接下载-->
+      <a href=".mp4" download>下载</a>
+
+
+    <!-- 3.跳转锚点 href开头带#号-->            <!--可以设置在其他页面进行点击跳转-->
+    <a href="#biaoji">可点击跳转到下面与<strong>a中name</strong>内容相同的位置</a>   
+    <a href="#idtest">可点击跳转到下面与<strong>标签id</strong>内容相同的位置</a>
+    <p class="pcss">111</p>
+    <p class="pcss">222</p>
+    <!-- 法一：要跳转到的位置 注意a标签属性是name -->
+     <a name="biaoji"></a>
+    <p class="pcss"> 333</p>
+    <!-- 法二：在要跳转到的位置的标签id -->
+    <p class="pcss" id="idtest">444</p>
+
+
+    <!-- 4.回到顶部 <a href="#"> -->
+     <a href="#">回到顶部</a>
+     <!--5.刷新页面 <a href=""> -->
+     <a href="">刷新页面</a>
+    <!--6. 执行js脚本 -->
+     <a href="javascript:alert(666);">出现弹窗</a>
+
+
+     <!-- 7.唤起指定应用 -->
+      <a href="tel：1008">拨打电话</a>
+      <a href="mailto：1234@qq.com">发送邮件</a>
+      <a href="sms：10086">发送短信</a>
+
+</body>
+</html>

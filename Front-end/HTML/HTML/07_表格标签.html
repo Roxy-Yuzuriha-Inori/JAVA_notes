@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- 表格   -->
+    <!-- 属性：border边框像素，大于1只影响表格头部和脚注 -->
+    <!-- 属性：cellsoacing：单元格之间的间隙 -->
+    <!-- 属性：height：整个表格高度  -->
+    <table border="1" width="500" height="500" cellspacing="0">
+        <!-- 表格标题 -->
+         <caption>表格标题</caption>
+
+         <!-- 表格头部 -->
+         <!-- 属性align：靠左靠右  valign：靠上靠下 -->
+          <thead height="50" align="center" valign="middle">
+
+            <!-- tr:table row行 -->
+             <tr  height="50" align="center" valign="middle">
+                <!-- th表格头部单元格 -->
+                 <!-- 属性width宽度影响一整列 height高度影响一整行-->
+                <th width="50" height="50">一行中的第一个单元格</th>
+                <th>一行中的第二个单元格</th>
+             </tr>
+          </thead>
+
+          <!-- 表格主体 -->
+           <!-- 属性height：至少是表格高度-表格脚注高度-表格头部高度，不然不会改变 -->
+           <tbody height="50" align="center" valign="middle">
+            <!-- 三行两列 -->
+            <tr>
+                <!-- td表格主体单元格 -->
+                 <td></td>
+                 <td></td>
+            </tr>
+            <tr>
+                <!-- td表格主体单元格 -->
+                 <td></td>
+                 <td></td>
+            </tr>
+            <tr>
+                <!-- td表格主体单元格 -->
+                 <td></td>
+                 <td></td>
+            </tr>
+           </tbody>
+
+           <!-- 表格脚注 -->
+            <tfoot  height="80" align="center" valign="middle">
+                <tr>
+                    <td></td>
+                    <td>脚注：</td>
+                </tr>
+            </tfoot> 
+    </table>
+
+<!-- 合并单元格 -->
+ <!-- td属性 
+  colspan=“2” 将该单元格水平扩展成多个单元格的大小，然后删除多余的横向的td
+  rowspan=“2” 将该单元格垂直扩展成多个单元格的大小，然后删除多余的横向的td
+ -->
+
+</body>
+</html>
