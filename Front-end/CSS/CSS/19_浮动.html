@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    .outer{
+        background-color: gray;
+        width: 800px;
+        height: 400px;
+        padding: 10px;
+    }
+    .box{
+        font-size: 20px;
+        padding: 10px;
+    }
+    .box1{
+        background-color: skyblue;
+    }
+    /* 浮动特点 */
+    /* 1.开启浮动就脱离文档流 */
+    /* 2.宽与高默认由内容撑开，也可以单独设置 */
+    /* 3.不会产生margin相关的问题 */
+    /* 4.不会像行内块一样被当作文本处理，没有行内块空白问题（换行引起的那个问题） */
+
+    .box2{
+        background-color: yellow;
+        float: left;
+    }
+    
+    .box3{
+        background-color: red;
+    }
+    
+</style>
+<body>
+    <div class="outer">
+        <div class="box box1">盒子1</div>
+        <div class="box box2">盒子2</div>
+        <div class="box box3">盒子3</div>
+    </div>
+</body>
+</html>

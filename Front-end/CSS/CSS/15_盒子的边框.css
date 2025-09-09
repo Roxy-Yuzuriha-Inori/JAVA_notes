@@ -1,0 +1,21 @@
+div{
+    border-width: 21px;
+    border-left-width:10px;
+    border-right-width: 19px;
+    border-bottom-width: 13px;
+    border-top-width: 31px;
+
+    /* 一下属性也可细分为上下左右 */
+    border-style: dotted;
+    border-left-style: solid;
+
+    border-color: yellowgreen;
+    border-left-color: #000;
+
+    /* 单方向符合属性 */
+    border-left: 1px solid #000;
+
+
+
+
+}

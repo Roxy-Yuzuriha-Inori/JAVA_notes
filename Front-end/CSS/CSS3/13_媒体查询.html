@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /* 媒体类型 */
+        /* 只有在打印机或打印预览才应用的样式 */
+        /* @media screen  */
+        @media print {
+            /* 会被后面写的样式顶掉 ， 最好写到最后*/
+            h1{
+                display: block;
+            }
+        }
+
+        /* 媒体特性 */
+        /* 当视口宽度变成800px时应用以下样式 */
+        /* max-width:700px  当视口宽度小于700px时应用以下样式 */
+        /* min-width:700px  当视口宽度大于700px时应用以下样式 */
+        /* device-width:700px  当设备屏幕宽度等于700px时应用以下样式 */
+        @media(width:800px){
+            a{
+                color: #000;
+            }
+        }
+        /* 引入样式时可以多加一个属性 media=“条件” */
+        /* 运算符 and or not only(防止IE)*/
+        /* media之后的条件可以有运算符链接 */
+    </style>
+</head>
+
+<body>
+    
+</body>
+</html>

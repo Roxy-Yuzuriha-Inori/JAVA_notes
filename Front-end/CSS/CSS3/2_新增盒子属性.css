@@ -1,0 +1,27 @@
+.box{
+    /* 1.box-sizing */
+    /* 默认宽高是盒子的内容区 */
+    box-sizing: content-box;
+    /* 宽高是盒子包括padding和boarder */
+    box-sizing: border-box;
+
+    /* 2.resize */
+    /* 可在页面水平调整宽度 */
+    resize: horizontal;     /*vertical both*/
+    /* 父元素调整宽度太小，子元素多出的宽度将其隐藏 */
+    overflow: hidden;
+
+    /* 3.box-shadow */
+    /* 阴影 写两个值 水平和垂直*/
+    box-shadow: 10px 10px ;     /*相对于原来显示的盒子移出一个黑色阴影，水平向右和向下10px*/
+    /* 第三个值 颜色或者10px（模糊度） */
+    /* 写四个值 水平 垂直 模糊程度 颜色*/
+    box-shadow: 10px 10px 20px pink;
+    /* 写五个值 水平 垂直 模糊程度 阴影外延 颜色*/
+    /* 写六个值 水平 垂直 模糊程度 阴影外延 颜色 内阴影*/
+    box-shadow: 10px 10px 20px 10px pink inset;   /*内阴影，阴影在里面*/
+
+    /* 4.opacity */
+    /* 取值范围：0-1  1不透明  0完全透明*/
+    opacity: 1;
+}

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .outer{
+            width: 1000px;
+            height: 600px;
+            background-color: #888;
+            /* 把父容器变成伸缩容器 */
+            /* 父容器所有 子 元素变成了伸缩项目，伸缩项目都是块状化 */
+            display: flex;
+
+            /* flex：两个伸缩容器是div上下排列 */
+            /* inline-flex:把div变成了行内块元素 */
+            /* 用flex实现同样效果还能去掉行内块之间的缝隙，将两个div用新的div包裹，并将新的div设置成flex */
+            display: inline-flex;
+
+
+            /* 伸缩盒模型相关属性 */
+            /* 默认从左到右主轴，从上到下侧轴，元素靠出发点排 */
+            /* 修改主轴方法，侧轴也随之改变，侧轴永远垂直于主轴 */
+            flex-direction: row;  /*默认值*/
+            /* 从右到左主轴，从上到下侧轴 */
+             flex-direction: row-reverse ;
+             /* 从上到下主轴，从左到右侧轴 */
+            flex-direction: column;
+             /* 从下到上主轴，从左到右侧轴 */
+             flex-direction: column-reverse;
+
+
+             /* 主轴换行方式 */            
+             /* 默认nowrap即在主轴方向上父元素宽度占满，多加的元素会缩小同一行的宽度使该行容纳下多加的元素 */
+             flex-wrap: nowrap;
+
+             /* 父元素宽度满了会换行 但换行的元素会根据父元素的侧轴高度与第一行空出一些距离 超出父元素高度会溢出，不会挤一挤*/
+             flex-wrap: wrap;
+             /* 从父容器左上往下排 变成了 从左下往上排 */
+             flex-wrap: wrap-reverse;
+
+             /* 复合属性(了解) 复合flex-direction和flex-wrap */
+            flex-flow:row wrap ;
+
+            /* 主轴对齐方式 */
+            /* 主轴开始方向对齐 */
+            justify-content: flex-start;
+            /* 主轴结束方向对齐 */
+            justify-content: flex-end;
+            /* 主轴方向居中 */
+            justify-content: center;
+            /* 以下的万一能占满，项目与项目之间的间隙不是必须的 */
+            /* 项目均匀分布在一行中，项目与项目之间的距离，是项目距里边缘的两倍 */
+            justify-content: space-around;
+            /* 项目均匀分布在一行中，项目与项目之间的距离是均等的，距离边缘的项目紧靠边缘 */
+            justify-content: space-between;
+            /* 项目完全均匀分布在一行中 */
+            justify-content: space-evenly;
+
+
+            /* 侧轴对齐  一行 */
+            /* 侧轴的起始位置对齐 */
+            align-items: flex-start;
+            /* 侧轴的结束位置对齐 */
+            align-items: flex-end;
+            /* 侧轴的中间位置对齐 */
+            align-items: center;
+            /* 侧轴基线对齐 */
+            align-items: baseline;
+            /* (默认)拉伸到整个父容器，前提伸缩项目不能给高度 */
+            align-items: stretch;
+
+            /* 侧轴对齐  多行 */
+            /* 侧轴的起始位置对齐  如侧轴是从上到下的，靠上对齐，高度间隙没有了*/
+            align-content: flex-start;
+             /* 侧轴的结束位置对齐 */
+            align-content: flex-end;           
+            /* 侧轴的中间位置对齐 */
+            align-content: center;
+            /*同justify-self，边缘变成了上下边缘  */
+            align-content: space-around;
+            align-content: space-between;
+            align-content: space-evenly;
+            /* 平分整个父容器,前提伸缩项目不能给高度 */
+            align-content: stretch;
+
+
+            /* 让子元素水平垂直居中 方案一*/
+            justify-content: center;
+            align-items: center;
+        }
+        .inner{
+            /* 一行多大看的是子元素高度最大值 */
+            width: 200px;
+            height: 200px;
+            background-color: skyblue;
+            border: 1px solid black;
+            box-sizing: border-box;
+            /* 让子元素水平垂直居中 方案二：父元素开启弹性布局，子元素margin：auto*/
+            margin: auto;
+        }
+        .inner2{
+            /* 设置伸缩项目在主轴上的基准长度，若主轴是横向的，代替宽；若主轴是纵向的，代替高 */
+            flex-basis: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="outer">
+        <div class="inner inner2">1</div>
+        <div class="inner">2</div>
+        <div class="inner">3</div>
+    </div>
+</body>
+</html>

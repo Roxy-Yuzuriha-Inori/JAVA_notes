@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    * {
+        margin:0;
+        padding: 0;
+    }
+    .header{
+        background-color: orange;
+        height: 100px;
+        text-align: center;
+        line-height: 100px;
+        font-size: 20px;
+    }
+    .A0{
+        font-size: 100px;
+        background-color: skyblue;
+        /* 开启粘性定位，不脱离文档流 */
+        /* 当包含粘性定位的父容器被推出视口时，粘性定位的子元素也一并被推走 */
+        position: sticky;
+        /* 参考最近一个能滚动的祖先元素，即使不是真正的可滚动祖先（比如content里加overflow：scroll） */
+        top:0px;
+    }
+    .A{
+        font-size: 100px;
+        background-color: gray;
+    }
+    .item{
+        font-size: 100px;
+    }
+    body{
+        height: 2000px;
+    }
+</style >
+<body >
+<div class="header">头部</div>
+<!-- 内容区 -->
+<div class="content">
+<div class="item">
+    <div class="A0">A</div>
+    <div class="A">A1</div>
+    <div class="A">A2</div>
+    <div class="A">A3</div>
+    <div class="A">A4</div>
+</div>
+<div class="item">
+    <div class="A0">B</div>
+    <div class="A">A1</div>
+    <div class="A">A2</div>
+    <div class="A">A3</div>
+    <div class="A">A4</div>
+</div>
+<div class="item">
+    <div class="A0">B</div>
+    <div class="A">A1</div>
+    <div class="A">A2</div>
+    <div class="A">A3</div>
+    <div class="A">A4</div>
+</div>
+</div>
+</body>
+</html>

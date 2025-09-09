@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .outer{
+            border: solid black 1px;
+            width: 600px;
+            
+            background-color: gray;
+        }
+        .box{
+            background-color: skyblue;
+            width: 100px;
+            height: 100px;
+            border: solid black 1px;
+            margin: 10px;
+        }
+        /* 所有子元素都浮动，其父元素没有内容会塌陷成一条线 */
+        .box1,.box2,.box3 {
+            float: left;
+        }
+         /* 解决方案 */
+         /* 将box4设置成行内块元素，背景和文字都不会和浮动的元素重叠，父元素也会被行内块元素撑开 */
+         .box4{
+            display: inline-block;
+         } 
+         /* 增加属性clear:both，清除前面所有浮动元素带来的影响 */
+         /* 使用前提，box4不能是行内元素 */
+         .box4{
+            clear: both;
+         }
+         /* 高级写法，总是得在浮动元素的最后一个元素加上clear属性,前提父元素包裹的全得是浮动元素 */
+         .outer::after{
+            content: '';
+            display: block;
+            clear: both;
+         }
+
+    </style>
+</head>
+<body>
+    <div class="outer">
+        <!-- 在块级元素后浮动，块级元素独占一行,浮动元素在一行后浮动-->
+        <!-- <div class="box box0">0</div> -->
+        <div class="box box1" >1</div>
+        <div class="box box2">2</div>
+        <div class="box box3">3</div>
+        <!-- 在块级元素前浮动, 块级元素背景撑开父级元素，文字环绕在浮动元素周围  -->
+        <div class="box box4">4</div>
+    </div>
+</body>
+</html>
+
+<!-- 疑点 -->
+ <!-- 如果子元素没有设置宽度width，那么在块级元素前有浮动元素，该块级元素的文字环绕在该行的右边 -->
+ <!-- 如果子元素设置宽度width，那么在块级元素前有浮动元素，该块级元素的文字环绕在下一行 -->

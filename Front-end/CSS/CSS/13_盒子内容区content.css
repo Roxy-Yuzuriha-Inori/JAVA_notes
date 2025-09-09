@@ -1,0 +1,17 @@
+div{
+    height: 200;
+    background-color: #fff;
+    /* 最低宽度 */
+    /* 视口的最低宽度，低于这个会出现滚动条 */
+    min-width: 600px;
+    max-width: 1000px;
+
+    /* 最小高度 */
+    /* 高度最小为50px */
+    min-height: 50px;
+    max-height: 100px;
+
+    /* 隐藏整个元素的方式 */
+    display: none;     /*不会在原来的位置占位，消失了*/
+    visibility: hidden;  /*还会在原来的位置占位，隐形了*/
+}

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    .outer{
+        width: 1000px;
+        height: 900px;
+        background-color: #888;
+        margin: 0 auto;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+    .inner{
+        width: 200px;
+        height: 200px;
+        background-color: skyblue;
+        border: 1px solid black;
+        box-sizing: border-box;
+        /* 复合属性 */
+        /* 复合flex-grow flex-shrink flex-basis*/
+        /* 顺序要求:拉伸，收缩，基准长度 */
+        flex:1 1 auto;
+        /* 简写 */
+        flex:auto;
+        /* 常用：基准长度为0，width为0，但被拉伸平均分配该行父容器宽度 */
+        flex:1 1 0;
+        /* 简写 */
+        flex:1;
+        /* 不拉伸 不收缩 不设置基准长度 */
+        flex:0 0 auto;
+        /* 简写 */
+        flex: none;
+        /* 不拉伸 能收缩 不设置基准长度  默认值 */
+        flex:0 1 auto;
+        /* 简写 */
+        flex:0 auto;
+    }
+    /* 拉伸：设置flex-grow的子元素根据flex-grow的值分配该行多余空间 */
+    /* 压缩：flex-shrink 计算盒子收缩比：（该盒子大小*flex-shrink）/各盒子大小*flex-shrink之和  盒子收缩量：收缩比*父元素收缩量*/
+    
+    .inner1{
+        flex-grow:1
+    }
+  
+    .inner2{
+        width: 300px;
+        flex-grow: 1;
+        /* 单独排序 */
+        /* 小的数值尽可能往前排  默认值为0 */
+        order:-1; 
+        /* 单独对齐 */
+        /* 侧轴单独对齐 */
+        align-self: center;
+    }
+    .inner3{
+        flex-grow: 1;
+    }
+    
+</style>
+<body>
+    <div class="outer">
+        <div class="inner inner1">1</div>
+        <div class="inner inner2">2</div>
+        <div class="inner inner3">3</div>
+    </div>
+</body>
+</html>

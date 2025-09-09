@@ -1,0 +1,179 @@
+/* 1.动态伪类选择器 符合现在顺序lvha*/
+/* 没有访问过的元素 a超链接独有 */
+a:link{
+    color: aliceblue;
+}
+/* 被点击访问过的元素 a超链接独有 */
+a:visited{
+    color: aqua;
+}
+/* 鼠标悬浮在该元素的颜色 所有元素都可以*/
+a:hover{
+    color: #000;
+}
+/* 按住激活时的元素颜色 所有元素都可以*/
+a:active {
+    color: blue;
+}
+/* 表单一类获取焦点时 */
+input:focus {
+    color: antiquewhite;
+}
+
+
+
+/* 2.结构伪类选择器 */
+/* 结构一
+<div>
+    <p></p>   被选中
+    <p></p>
+    <p></p>
+    <p></p>
+</div> 
+*/
+/* 选中的是div的所有p儿子且是父级的第一个孩子 */
+div>p:first-child{
+    color: aliceblue;
+}
+/* div中最后一个 */
+div>p:last-child{
+    color: aliceblue;
+}
+/* div中偶数个，也可以直接写数字或even */
+/* n是指是从0开始自然增长的一个数，比如前五个  -n+5  同时要满足an+b形式   不能写成5-n */
+div>p:nth-child(2n){
+    color: aliceblue;
+}
+
+/* 结构二
+<div>
+    <span>0</span>
+    <p>1</p>
+    <p>2</p>
+    <p>3</p>
+</div> 
+*/ 
+/* 1.div的所有儿子 2.父级的第一个子元素  3.是不是p元素   第一个元素是span，谁也选不中 */
+div>p:first-child{
+    color: aliceblue;
+}
+
+/* 1.div的所有儿子 2.父级的第二个子元素  3.是不是p元素    会选中<p>1</p> */
+div>p:nth-child(2){
+    color: aliceblue;
+}
+
+/* 1.div的所有儿子 2.p同类型中父级的第一个   会选中<p>1</p> */
+div>p:first-of-type{
+    color: antiquewhite;
+}
+
+/* 1.div的所有儿子 2.p同类型中的第三个   会选中<p>3</p> */
+div>p:nth-of-type(3){
+    color: antiquewhite;
+}
+
+/* 结构三
+<div>
+    <p>1</p>       被选中
+    <span>
+        <p>2</p>   被选中
+    </span>
+    <p>3</p>
+    <p>4</p>
+</div> 
+*/ 
+/* 1.div的所有后代  2.父级的第一个子元素  3.是不是p元素    会选中两个 */
+div p:first-child{
+    color: aliceblue;
+}
+/* 选中的是没有兄弟的p元素（父级下面的子类就一个p元素，不可以存在其他元素）   <p>2</p>*/
+p:only-child{
+    color: #000;
+}
+/* 选中的是没有同类型兄弟的p元素 （父级下面的子类就一个p，但可以存在与p不同的元素） /
+p:only-of-type{
+    color: #000;
+}
+
+/* 选中的是没有内容的div元素 */
+/* <div><div> */
+div:empty{
+    width: 100px;
+    height: 100px;
+    background-color: #000;
+}
+
+/* 3.否定伪类选择器 */
+/* 
+<div>
+  <p><p>
+  <p><p>
+  <p class="fail"><p>
+<div> 
+*/
+/* div的儿子p元素中排除类名为.fail的元素 */
+div>p:not(.fail){
+    color: #000;
+}
+/* div的儿子p元素中排除第一个元素 */
+div>p:not(:first-child){
+    color: #000;
+}
+
+/* 4.UI伪类选择器 */
+/* 勾选后套用该样式，没勾选回到原来的样式  相比input：focus勾没勾都算focus */
+input:checked{
+    width: auto;
+    height: auto;
+}
+/* 被禁用的复选框的样式 */
+input:disabled{
+    color: #000;
+}
+
+/* 5.目标伪类选择器 */
+/* 选中锚点所指向的伪类 */
+div:target{
+    color: #000;
+}
+
+
+/* 6.语言伪类选择器 */
+/* 让div中语言为英文的样式 */
+div:lang(en){
+    color: #000;
+}
+/* 让所有语言为英文的样式 */
+:lang(en){
+    color: #000;
+}
+
+/* 7.伪元素选择器 */
+/* 
+<div>Lie dfafaf</div>
+*/
+/* div中第一个字的样式 */
+div::first-letter{
+    color: #000;
+}
+/* div中第一行的样式 */
+div::first-line{
+    color: #000;
+}
+/* div中鼠标选中文字的样式  */
+div::selection{
+    color: #000;
+}
+/* 输入框提示文字样式    ps：placeholder是input的一个属性，值为要提示的内容 */
+input::placeholder{
+    color: #000;
+}
+/* <p>d<p> */
+/* 在某个元素要呈现的内容之前之后要添加的内容，鼠标选不中 */
+p::before{
+    content: "添加的是p中内容前一些公共部分";
+}
+p::after{
+    content: "添加的是p中内容后一些公共部分";
+}

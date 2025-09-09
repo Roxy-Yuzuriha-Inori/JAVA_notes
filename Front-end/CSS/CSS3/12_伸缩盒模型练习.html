@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /* 重置样式 */
+        *{
+            font-size: 14px;
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+        a{
+            text-decoration: none;
+        }
+        ul{
+            list-style: none;
+        }
+        /* 背景图片充满整个视口 */
+        /* body以及其父元素html没有高度，需要撑开，手动设置高度100% */
+        body,html{
+            width: 100%;
+            height: 100%;
+        }
+        body{
+            background-image: url();
+            background-repeat: no-repeat;
+            /* 背景图尽可能充满整个页面 */
+            background-size: cover;
+        } 
+        .page-header{
+            background-color: rgba(0,0,0,0.7);
+            height: 70px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        } 
+        .nav{
+            display: flex;
+        }
+        /* 中间导航栏垂直方向居中 */
+        .content{
+            display: flex;
+            /* 动态算出视口高度：整个视口-头部70px */
+            height: calc(100vh-70px);
+        }
+        .cnav{
+            width: 1000px;
+            height: 300px;
+            background-color: skyblue;
+            margin:auto;
+        }      
+    </style>
+</head>
+<body>
+    <header class="page-header">
+        <!-- 顶部栏左侧图片 -->
+         <a href="#"><img src=""></a>
+         <!-- 顶部右侧导航栏 -->
+          <ul class="nav">
+            <li><a href=""></a>1</li>
+            <li><a href=""></a>2</li>
+            <li><a href=""></a>3</li>
+          </ul>
+    </header>
+    <!-- content -->
+     <div class="content">
+        <div class="cnav">
+
+        </div>
+     </div>
+</body>
+</html>

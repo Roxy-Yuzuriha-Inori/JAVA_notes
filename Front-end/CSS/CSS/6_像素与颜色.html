@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .xiangsu {
+    /*像素：相同屏幕大小，根据能显示像素的多少单位像素的大小不是固定的*/
+            width: 100px;
+            height: 100px;
+            /* 颜色第一种表示 */
+            /* 颜色：rgb红绿蓝  rgba，多一位控制透明程度 0为完全透明 1为不透明 */
+            color:rgba(red, green, blue, 0.5);
+            /* 颜色第二种表示 */
+            /* 颜色的表示方法 百分比，0~255， */
+            color: 255,0,0           
+}
+             /* 颜色第三种表示 */
+        /* hex和hexa表示颜色 16进制 红绿蓝分三组，每组两位代表一种颜色，共六位 */
+        .color3{
+            /* hex */
+            background-color: #ff0000;
+            /* hexa a代表透明度，同样两位用十六进制表示00-ff */
+            /* 若两位是相同的则可以简写成一位，此时其他原色都应简写 比如#ffaabbcc 可以简写成#fabc */
+        }
+
+        /* 颜色第四种表示 */
+        /* HSL和HSLA表示颜色 颜色由三种属性组成，hue色度，saturation饱和度，lightness亮度 */
+        /* hue色度，取值范围0-360度 * 
+          saturation饱和度，取值范围0-100% *  饱和度越低，掺入的灰色越多
+          lightness亮度，取值范围0-100% */
+        .color4 {
+            background-color: hsl(0deg, 100%, 50%);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="xiangsu"></div>
+</body>
+</html>

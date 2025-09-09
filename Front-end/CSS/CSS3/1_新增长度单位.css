@@ -1,0 +1,8 @@
+a{
+    /* vw（viewpoint width）视口宽度的20% */
+    width: 20vw;   
+
+    /* vh（viewpoint high）视口高度的20%  */
+    width: 20vh;
+    
+}

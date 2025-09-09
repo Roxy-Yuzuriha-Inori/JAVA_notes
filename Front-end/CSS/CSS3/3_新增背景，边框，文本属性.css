@@ -1,0 +1,76 @@
+/* 背景属性 */
+img{
+    /* 默认背景图左上角的起点在border和padding之间，padding外层铺开 */
+    background-origin:padding-box; /*border-box  content-box*/
+
+    /* 默认超过边框以外，图片、背景色的内容不可见 */
+    background-clip: border-box;   /*padding-box  content-box*/
+    background-clip: text;  /*背景图只呈现在文字上*/
+
+    /* 调整背景图宽高 */
+    background-image: url();
+    background-size: 400px 400px;
+    /* 将图片等比例缩放，使整个图片都放进容器  盒子多余空的部分会重复*/
+    background-size:contain;
+    /* 推荐：等比例缩放，部分图片放进容器 */
+    background-size:cover;   
+
+    /* 复合属性 */
+    /* 背景颜色 url 重复 位置(position) / 大小 原点 裁剪方式 */
+
+    /* 多背景图 */
+    background: url() no-repeat left top,
+                url() no-repeat right top;
+
+}
+
+/* 边框属性 */
+.border{
+    /* 圆角边框 百分比或像素*/
+    /* 两个值 椭圆半径宽与高 */
+    border-radius: 20px;   
+
+
+    /* 边框外轮廓 不参与计算盒子大小*/
+    outline-width:20px ;
+    outline-color: antiquewhite;
+    outline-style: dotted;
+    /* 偏移量 复合属性不包括offset */
+    outline-offset: 10px;
+
+
+
+}
+
+/* 文本属性 */
+h1{
+    /* 文本阴影 */
+    color: white;
+    text-shadow: 0px 0px 10px red;
+
+    /* 文本换行 */
+    /*按原文显示 长文字超出盒子，显示在外边*/
+    white-space: pre;
+    /* pre-wrap 文字始末空格能被选中  长文字超出盒子，换行显示在里边*/
+    /* pre-line 文字始末空格不能被选中  长文字超出盒子，换行显示在里边*/
+    /* nowrap  文字不换行  长文字超出盒子，显示在外边 */
+
+    /* 文本溢出 */
+    white-space: nowrap;
+    /* 对于溢出的文字以省略号显示 */
+    text-overflow: ellipsis;
+
+    /* 文本修饰 */
+    text-decoration-line: underline;
+    text-decoration-style: dashed;
+    text-decoration-color: antiquewhite;
+    /* 复合属性 */
+    text-decoration: none;
+
+    /* 文本描边 仅webkit*/
+    -webkit-text-stroke-color: aliceblue;
+    -webkit-text-stroke-width: 0%;
+    -webkit-text-stroke: darkblue 0;
+}
+
+/* 渐变属性 */

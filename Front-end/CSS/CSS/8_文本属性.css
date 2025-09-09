@@ -1,0 +1,48 @@
+.div{
+    /*1. 文本颜色 */
+    color: aliceblue;
+
+    /* 2.文本间距 */
+    /* 字母与字母之间的间距 */
+    letter-spacing: 10px;
+    /* 单词之间的间距  通过空格识别一个单词*/
+    word-spacing: normal;
+
+    /* 3.文本修饰 属性值没有顺序上的要求*/
+    /* underline 下划线 ， overline 上划线， line-through 删除线*/
+    /* dpotted 虚线 , wavy 波浪线*/
+    text-decoration: line-through dotted red;
+    text-decoration: underline wavy;
+
+    /* 4.文本缩进 */
+    /* 对应用的文本进行首行缩进 */
+    font-size: 5px;
+    text-indent: 10px;    /* 缩进两格，大小为字体大小的两倍 */
+
+    /* 5.文本对齐-水平 */
+    /* left 居左， right 居右， center 居中 */
+    text-align: left;
+
+    /* 6.行高 */
+    /* 一行字和上下边距加起来的高度 */
+    /* 字体和行高一致，理应上下字与字紧贴，实际上上下行的子会相碰，因为由于文字设计原因，写的10px呈现出来的不一定是10px */
+    font-size: 20px;
+    /*
+     行高调为0px ：
+     背景色会消失 （因为高度为行高✖行数=0px）， 
+     顶部文字会被吃掉一点（因为字体大小大于行高，又要展示在行高中央，最顶部的页面会遮挡掉一部分文字），
+    */
+    /* 设置了height，高度就是height，没有height，高度就是line-height ✖ 行数*/
+    line-height: 20px;     /* 还可以写normal，1.5（建议），150%（行高为原来的1.5倍） */
+     /*  单行文字的垂直居中 高度和行高一致  */
+    height: 20px;
+
+    /* 7.文本对齐-垂直 */
+    /* middle相对于父元素X的中心点进行垂直对齐，必须要有父元素，对子元素进行操作 */
+    /* 默认值baseline：元素基线与父元素基线对齐 */
+    /* 不能对块级元素进行操作 */  /*可对表格单元格的文字进行垂直对齐*/
+    /* 当子元素图片大于文字时，相对而言可看作vertical-align操作的是文字 */
+    vertical-align: middle;
+
+
+}

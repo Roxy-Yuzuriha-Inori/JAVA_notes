@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <span>手机电量</span>
+    <!--状态标签：一个条状  -->
+    <!-- min最小值 max最大值 value当前值 low，high分段值 默认在low和high之前为绿色，低于low或高于high为黄色 -->
+    <!-- optimum最佳值，重新定义low和high的规则，定义optimum所在区间的为最佳值绿色，相邻区间为黄色，相隔一个区间为红色 -->
+    <meter max="100" min="0" value="80" low="20" high="80" optimum="90"></meter>
+
+    <span>当前进度 </span>
+    <!-- value的值代表20% -->
+    <progress max="100" value="20"></progress>
+</body>
+</html>

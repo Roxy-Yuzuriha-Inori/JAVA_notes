@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    /* 1.页面空白问题 */
+    /* 给父元素div的font-size设置为0 */
+    div{
+        font-size: 0;
+    }
+    /* 防止子元素继承父元素，需要给子元素的字体单独设置字体大小 */
+    span{
+        font-size: 20px;
+    }
+
+    /* 2.行内块元素的幽灵空白问题 */
+    div{
+        width: 6opx;
+        background-color: #8e0a0a;
+    }
+    /* 图片在div中下面会有一部分空间，即图片的底边不会和div底边重叠 */
+    /* 原因：子元素图片默认是基线对齐，对于文字来说有g等文字会越过基线 */
+    /* 解决方案：1.在子元素img使样式vertical-align不为默认值（最好）
+                2.img属性display=block，此时图片后不能有内容了
+                3.父元素div的font-size设置为0，需要给子元素的字体单独设置字体大小
+     */
+</style>
+<body>
+    <div>
+        <!-- 1.页面空白问题 -->
+        <!-- 行内元素、行内块元素之间因为代码换行原因，在页面显示的时候两个元素之间会有空白 -->
+        <span>1</span>
+        <span>2</span>
+        <span>3</span>
+        <hr>
+        <img>
+        <img>
+    </div>
+
+
+        <!--2. 行内块元素的幽灵空白问题 -->
+    <div>
+        <img>
+    </div>
+
+</body>
+</html>

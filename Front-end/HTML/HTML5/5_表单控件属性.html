@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!-- 表单属性 novalidate所有控件都不做校验-->
+    <form action="">
+        <!-- 控件属性 -->
+        <!-- 属性placeholder：用于输入型表单控件上，用于提示信息-->
+         <!--属性required:该控件为必填项 -->
+         <!-- 属性autofoucus：打开时自动对焦到某个控件 -->
+        <!-- 属性autocomplete ="on"：识别并显示历史纪录，不能写在密码，多行输入，单复选框 -->
+         <!-- pattern="正则表达式" 根据正则表达式的要求填写 ，限制不了多行输入，需要required-->
+        账号:<input type="text" name="accout" value="xxx" maxlength="10"><br>
+        密码:<input type="password"  name="pwd"  placeholder="请..."><br>
+
+         性别:
+         <input type="radio" name="gender" value="male" chenked>男
+         <input type="radio" name="gender" value="female">女<br>
+         爱好:
+         <input type="checkbox" name="hobby" value="smoke">抽烟
+         <input type="checkbox" name="hobby" value="drink">喝酒
+         <input type="checkbox" name="hobby" value="perm">烫头<br>
+
+        <!-- input新增type属性 -->
+         <!-- 邮箱 会校验格式 可以提交空值（防止提交控制可加required） -->
+         <input type="email" name="yx">
+          <!-- 网址 会校验格式 可以提交空值（防止提交控制可加required） -->        
+         <input type="url" name="url">
+         <!-- 数字，可上下调整 会校验格式 可以提交空值（防止提交控制可加required） -->
+        <input type="number" name="number" step="2" max="80" min="20">
+         <!-- 搜索 新增快速删除 可以提交空值（防止提交控制可加required） -->
+        <input type="search" name="key">
+        <!-- 手机上点击文本框会出现拨号框 -->
+        <input type="tel">
+        <!-- 范围选择 -->
+        <input type="range" max="50">
+        <!-- 颜色选择器 -->
+         <input type="color">
+         <!-- 日期 -->
+          <input type="date">
+          <input type="month">
+          <input type="week">
+          <input type="time">
+          <!-- 日期+时间 -->
+          <input type="datetime-local">
+
+        
+ <button>提交</button>
+    </form>
+</body>
+</html>

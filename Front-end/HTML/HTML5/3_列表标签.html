@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form action="#">
+        <!-- 文本框通过list和datalist的标签list进行绑定 -->
+        <input type="text"  list="mydata">
+        <button>搜索</button>
+    </form>
+    <datalist id="mydata">
+        <!-- 根据文本框输入的值对value进行查找,进行提示 -->
+        <option value="周杰伦">周杰伦</option>
+        <option value="周冬雨">周冬雨</option>
+        <option value="马冬梅">马冬梅</option>
+        <option value="王小伦">王小伦</option>
+    </datalist>
+
+    <!-- 点击小三角展开回答 -->
+    <details>
+        <summary>问题</summary>
+        <p>回答</p>
+    </details>
+    
+</body>
+</html>

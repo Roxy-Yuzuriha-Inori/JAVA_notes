@@ -1,0 +1,22 @@
+/* 里面包裹的文字改成多列布局 */
+.outer{
+    /* 竖着的五列 */
+    column-count: 5;
+    /* 指定每列宽度，自动计算列数 */
+    column-width: 220px;
+    /* 列与列的间距 */
+    column-gap: 10px;
+    /* 每列边框 */
+    column-rule-width: 2px;
+    column-rule-style: dashed;
+    column-rule-color: aliceblue;
+    column-rule: 2px darkblue dashed;
+}
+h1{
+    /* 标题横跨多少列 */
+    column-span: all;    /*none*/
+}
+/* 在列中插入图片 */
+img{
+    width: 100%;
+}

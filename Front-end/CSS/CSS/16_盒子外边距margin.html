@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+    /* margin注意点 */
+    /* 和padding一样可写一个或多个值 */
+    /* 子元素的盒子模型（包含margin）在父元素的内容区里 */
+    /* 对于行内元素来说，上下的margin设置是无效的 */
+    /* 给一个块级元素左右margin的值设置为auto，可以实现水平方向上的居中 */
+    /* margin可以为负值 */
+
+     .outer{
+    /* margin塌陷问题 */
+    /* 最上面的子元素写margin-top和最下面的子元素写margin-bottom，结果这些子元素的样式没有作用在子元素上，而是作用在父元素上 */
+    /* 解决方法 在父元素加上overflow: hidden;
+                在父元素上加上不为0的边框border
+                 在父元素上加上不为0的内边距padding
+                 */
+    overflow: hidden;
+    /* overflow还用于处理文字的溢出 */
+}
+
+    /* margin合并问题(只存在上下相邻元素，左右不存在) */
+    .box{
+        height: 40px;
+        width: 40px;
+    }
+    /* 上下元素之间的距离理应100px，实际上是50px */
+    .box1{
+        background-color: gold;
+        margin-bottom: 50px;
+    }
+    .box2{
+        background-color: blue;
+        margin-top: 50px;
+    }
+
+    </style>
+</head>
+<!-- body默认样式有个margin = 8px -->
+<body>
+    <div class="outer">
+    <div class="inner1"></div>
+    <div class="ineer2"></div>
+    </div>
+
+    <div class="box box1"></div>
+    <div class="box box2"></div>
+</body>
+</html>
