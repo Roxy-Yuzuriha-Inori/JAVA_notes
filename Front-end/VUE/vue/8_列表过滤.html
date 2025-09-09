@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<title>列表过滤</title>
+		<script type="text/javascript" src="../js/vue.js"></script>
+	</head>
+	<body>
+		<!-- 准备好一个容器-->
+		<div id="root">
+			<h2>人员列表</h2>
+      <!-- v-model通过keyword对输入的值value进行双向绑定 -->
+			<input type="text" placeholder="请输入名字" v-model="keyWord">
+			<ul>
+				<li v-for="(p,index) of filPerons" :key="index">
+					{{p.name}}-{{p.age}}-{{p.sex}}
+				</li>
+			</ul>
+		</div>
+
+		<script type="text/javascript">
+			Vue.config.productionTip = false
+			
+			用watch实现
+new Vue({
+				el:'#root',
+				data:{
+					keyWord:'',
+					persons:[
+						{id:'001',name:'马冬梅',age:19,sex:'女'},
+						{id:'002',name:'周冬雨',age:20,sex:'女'},
+						{id:'003',name:'周杰伦',age:21,sex:'男'},
+						{id:'004',name:'温兆伦',age:22,sex:'男'}
+					],
+					filPerons:[]
+				},
+				watch:{
+          //监听keyword有没有改变
+					keyWord:{
+            //因为空字符串indexOf返回0可以显示所有的数据，所有得立即执行一次用来显示所有数据
+						immediate:true,
+						handler(val){
+              //filter数组过滤方法，过滤出来的是一个满足过滤条件的数组
+							this.filPerons = this.persons.filter((p)=>{
+                //过滤方法：数组indexOf方法，找数组有没有val这个新的值，有则返回索引，没有则返回-1
+                 //indexOf("") 空字符串，返回0
+								return p.name.indexOf(val) !== -1
+							})
+						}
+					}
+				}
+			}) 
+			
+			//用computed实现
+			new Vue({
+				el:'#root',
+				data:{
+					keyWord:'',
+					persons:[
+						{id:'001',name:'马冬梅',age:19,sex:'女'},
+						{id:'002',name:'周冬雨',age:20,sex:'女'},
+						{id:'003',name:'周杰伦',age:21,sex:'男'},
+						{id:'004',name:'温兆伦',age:22,sex:'男'}
+					]
+				},
+				computed:{
+          //计算属性上来就会调一次，变化后再调
+					filPerons(){
+						return this.persons.filter((p)=>{
+							return p.name.indexOf(this.keyWord) !== -1
+						})
+					}
+				}
+			}) 
+		</script>
+</html>

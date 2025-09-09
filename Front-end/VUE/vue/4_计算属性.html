@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <title>姓名案例</title>
+  <!-- 引入Vue -->
+  <script type="text/javascript" src="../js/vue.js"></script>
+</head>
+
+<body>
+  <!-- 准备好一个容器-->
+  <div id="root">
+    姓：<input type="text" v-model="firstName"> <br /><br />
+    名：<input type="text" v-model="lastName"> <br /><br />
+    <!-- methods方式 -->
+    <!-- 插值里面调用函数，有（）返回函数值 没有返回的是整个函数 -->
+    全名：<span>{{fullName()}}</span>
+
+    <!-- computed方式 -->
+    <!-- 计算属性里面的属性挂载在了vue实例上，可以直接{{fullname}} 而不是 {{fullname.get()}}-->
+    全名：<span>{{fullName}}</span>
+
+  </div>
+</body>
+
+<script type="text/javascript">
+  Vue.config.productionTip = false
+
+  new Vue({
+    el: '#root',
+    data: {
+      firstName: '张',
+      lastName: '三'
+    },
+    methods: {    //弊端：只要firstname和lastname改变了，就会不断调fullName函数
+      fullName() {
+        console.log('@---fullName')
+        return this.firstName + '-' + this.lastName
+      }
+    },
+
+    //!!!计算属性，Vue会读取里面键值对值的get方法,然后取和属性名一样的名字挂载到Vue实例身上，Vue.fullname
+    computed: {
+      //1.键值对的值一般是对象
+      fullname: {
+        //2.什么时候调用get?
+        //第一次读取fullName或者所依赖的数据发生改变时,其余时候会将fullName的值放入缓存,不会频繁调用get
+        get() {
+          console.log(this)    //get里面的this是Vue实例对象
+          //3.直接firstName其作用域只有在data,通过this拿到firstName
+          return this.firstName + this.lastName
+        },
+
+        //4.修改计算属性,绑定原本的值
+        set(value) {
+          const arr = value.split('-')
+          this.firstName = arr[0]
+          this.lastName = arr[1]
+        }
+      },
+
+      //5.计算属性只有get时里面的属性可以看作函数简写
+      fullName() {
+        console.log('get被调用了')
+        return this.firstName + '-' + this.lastName
+      }
+    },
+
+  })
+</script>
+
+</html>

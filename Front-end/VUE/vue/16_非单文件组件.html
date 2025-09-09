@@ -1,0 +1,65 @@
+<script>
+  //1.创建组件   简写const school={...} 
+  const school = Vue.extend({
+	// el:'#root',    //组件定义时，不要写el配置项，因为最终所有的组件都要被一个vm管理，由vm决定服务于哪个容器。
+
+  //给组件起名，对应注册组件时的组件名
+  name:'xuexiao',
+  //data要写成函数形式    对象形式多个地方使用组件时，有一个地方修改组件的data值，其他地方的值也随之改变
+  data(){
+  //写成函数形式，调用是调用函数，就算修改也改不到函数里面的逻辑
+    return{
+      name:'1'
+    }
+  },
+  template:`<div>组件模板</div>`
+  })
+
+  new Vue({
+    el:'#root',
+    //2.vm注册组件(局部)
+    components:{
+     // 组件名:组件对象
+      xuexiao:school
+
+      //app
+    }
+  })
+    //2.注册组件(全局) （'组件名',组件对象）
+    Vue.component('xuexiao',school)
+
+//一般会有一个组件包含所有组件(组件的组件不用写在里面，目的是方便Vue的components写成components:{app})
+const app ={
+  components:{
+     xuexiao:school
+  }
+}
+</script>
+
+<body>
+  <!-- 3.使用组件 -->
+   <xuexiao></xuexiao>
+</body>
+
+关于组件名
+		<!-- 
+			几个注意点：
+					1.关于组件名:
+								一个单词组成：
+											第一种写法(首字母小写)：school
+											第二种写法(首字母大写)：School
+								多个单词组成：
+											第一种写法(kebab-case命名)：my-school
+											第二种写法(CamelCase命名)：MySchool (需要Vue脚手架支持)
+								备注：
+										(1).组件名尽可能回避HTML中已有的元素名称，例如：h2、H2都不行。
+										(2).可以使用name配置项指定组件在开发者工具中呈现的名字。
+
+					2.关于组件标签:
+								第一种写法：<school></school>
+								第二种写法：<school/>
+								备注：不用使用脚手架时，<school/>会导致后续组件不能渲染。
+
+					3.一个简写方式：
+								const school = Vue.extend(options) 可简写为：const school = options
+		-->

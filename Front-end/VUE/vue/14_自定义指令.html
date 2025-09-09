@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<!-- 什么时候会调用big函数？   该函数相当于是对象写法的 bind() 和 updata（） 两个函数内容经常一致-->
+<!-- 指令与元素绑定成功时（一上来运行）即bind()   或者  整个html模板重新解析时（修改其他的data属性的值）即updata（） -->
+
+<body>
+  <div id="root">
+    <h2>{{name}}</h2>
+    <h2>当前的n值是：<span v-text="n"></span> </h2>
+    <!--1. 自定义指令v-big -->
+    <h2>放大10倍后的n值是：<span v-big="n"></span> </h2>    
+    <!-- 2. 自定义指令v-fbind-->
+    <input type="text" v-fbind:value="n">
+  </div>
+  <script>
+    new Vue({
+      el: '#root',
+      data: {
+        n: 1
+      },
+      //自定义指令属性
+      directives: {
+        //1.编写big指令  两个参数（element标签节点，binding绑定对象）
+        big(element, binding) {
+          console.log(element, binding)
+          //将该标签的文本内容修改成绑定的值n
+          element.innerText = binding.value
+        },
+        //2.编写v-fbind
+        fbind(element, binding) {
+          element.value = binding.value
+          //问题：希望一打开页面能自动获取焦点，然而这种写法不会实现
+          /*因为element.focus()需要在模板在网页上渲染完毕才能起效，
+          然而调用该函数的时机是vue读取模板时，读到<input type="text" v-fbind:value="n">进行指令和标签的绑定，
+          此时模板还在Vue的读取中并未渲染却执行了element.focus，所以无法起效*/
+          element.focus()
+        },
+        //解决：需要详细写法,对象形式  对什么时间点执行什么代码进行细分
+        fbind: {
+          //成功绑定时调用
+          bind(element, binding) {
+            console.log(this);        //指令里的this是window
+            element.value = binding.value
+          },
+          //模板第一次渲染完毕插入页面时
+          inserted(element, binding) {
+            element.focus()
+          },
+          //整个html模板重新解析时（修改其他的data属性的值）
+          updata(element, binding) {
+            element.value = binding.value
+          },
+        },
+        'bignumber'(){
+          //v-多个单词在编写指令函数里用‘’   'bignumber'对应v-big-number
+        }
+
+      }
+    })
+    // 全局自定义指令--第二个参数是对象
+    Vue.directive('fbind',{
+          //成功绑定时调用
+          bind(element, binding) {
+            console.log(this);        //指令里的this是window
+            element.value = binding.value
+          },
+          //模板第一次渲染完毕插入页面时
+          inserted(element, binding) {
+            element.focus()
+          },
+          //整个html模板重新解析时（修改其他的data属性的值）
+          updata(element, binding) {
+            element.value = binding.value
+          },
+        },)
+    // 全局自定义指令--第二个参数是函数
+    Vue.directive('fbind',function(element, binding) {
+            console.log(this);        //指令里的this是window
+            element.value = binding.value
+          })
+    
+  </script>
+</body>
+
+</html>

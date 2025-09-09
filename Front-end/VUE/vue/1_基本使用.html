@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <!-- 引入vue -->
+   <script src="../js/vue.js"></script>
+</head>
+<body>
+  <div id="root">
+    <!-- 模板语法：查找变量，执行表达式 -->
+    <!-- 1.插值语法：写在显示的内容区域 语法：{{表达式}} 执行过程：在vm查找表达式里面的变量，执行表达式  可以产生一个值的就是表达式 -->
+    <h1>Hello {{name}}</h1> 
+     <!--2.指令语法：v-???  比如：属性前面加上v-bind，执行过程：在vm查找""里面的变量，执行表达式   v-bind：可简写为 ：  -->
+    <a v-bind:href="url"></a>
+
+    <!-- v-bind:单向数据绑定，修改js的data影响html，html输入框修改数据改不了data
+        v-model:双向绑定  只能在表单类（输入类）元素的属性使用  默认是value   允许哪个属性可以直接修改data-->
+    <input type="text" v-model:value="name">     <!--v-model:value="name" 可简写为 v-model="name" -->
+  </div>
+
+  <script type="text/javascript">
+    //Vue整体配置
+    Vue.config.productionTip = false  //阻止vue启动时产生生产提示
+    
+    //Vue作为一个构造函数，创建Vue实例,参数是配置对象
+    const vm = new Vue({
+      //用于指定该vue为哪个大容器服务，值通常是css选择器字符串  vue和容器之间是一对一的关系
+      /*el:'#root',*/
+      //容器里面的动态数据(第一种写法)
+      /*
+      data:{
+        name:'Vue',
+        url:'www'
+      }
+        */
+      //容器里面的动态数据(第二种写法)
+      data:function(){       //对象里面写函数，可简写为data(){}  方法名(){}
+        //data作为vue对象里面的属性，所有调用对象是vue实例，this指向vue实例
+        //vue管理的函数不要写成箭头函数，否则this是window
+        console.log('@@@',this)
+        return{
+        name:'Vue',
+        url:'www'         
+        }
+      }
+    })
+    //代替el，使用$mount指定容器
+    vm.$mount('#root')
+    //MVVM模型简介
+    //M是Model（模型），对应data中的数据
+    //V是View视图，对应html里的body模板
+    //VM是ViewModel，对应Vue实例对象
+    //VM作为框架，即一个桥梁实现V和M之间相互数据的绑定和监听，所以Vue实例对象通常vm变量名进行接收
+  </script>
+</body>
+</html>
