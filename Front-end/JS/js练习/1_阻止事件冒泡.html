@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <h3>阻止冒泡</h3>
+  <p>阻止冒泡是指阻断事件的流动，保证事件只在当前元素被执行，而不再去影响到其对应的祖先元素。</p>
+  <div class="outer">
+    <div class="inner">
+      <div class="child">1</div>
+    </div>
+  </div>
+  <script>
+    // 获取嵌套的3个节点
+    const outer = document.querySelector('.outer')
+    const inner = document.querySelector('.inner')
+    const child = document.querySelector('.child')
+
+    // 外层的盒子
+    outer.addEventListener('click', function () {
+      console.log('outer...')
+    })
+
+    // 中间的盒子
+    inner.addEventListener('click', function (ev) {
+      console.log('inner...')
+
+      // 阻止事件冒泡
+      ev.stopPropagation()
+    })
+
+    // 内层的盒子
+    child.addEventListener('click', function (ev) {
+      console.log('child...')
+
+      // 借助事件对象，阻止事件向上冒泡
+      ev.stopPropagation()
+    })
+
+  </script>
+</body>
+
+</html>

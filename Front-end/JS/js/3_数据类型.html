@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+    // 1.声明变量
+    let age = 18 , name = 'a'
+    console.log(age,name)    
+
+    //2. % 取余数
+
+    // 3.数据类型
+    //基本数据类型
+    //number, string,boolean,undefined,null
+    //引用数据类型
+    //对象
+
+    //4.模板字符串：在``中用${}读取变量
+
+    //5.undefined表示没有赋值（underfined做任何操作都是NaN）   null表示赋值了，但内容为空 
+    //  特例 undefined == null 为true undefined === null 为false
+
+    //6.检测数据类型typeof 变量
+
+    //7.类型转换
+    //隐式转换
+    //用+拼接的两个值，有字符串会将另一个也转成字符串
+    //+ 以外的运算符是将字符串转成数字   比如 ''-0=-2null和''转换后是0，undefined是NaN
+    //+ 作为正号解析可以转成数字型  如：+"123" 结果是数字型123
+    //显式转换（3种）
+    let str='123'
+    //Number(str) 相当于  +str
+    //parseInt('12.34px')    取整数部分  12
+    //parseFloat('12.34px')  取数字部分  12.34
+
+    //案例
+    let num1 = +prompt('请输入数字')
+  </script>
+</body>
+</html>

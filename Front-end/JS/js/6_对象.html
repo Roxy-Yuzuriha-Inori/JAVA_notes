@@ -1,0 +1,19 @@
+<script>
+  let phone={
+    name:''
+  }
+  //新增对象属性
+  phone.age=10
+  //调用
+  phone['age']
+
+  //对象遍历,从对象里面一个一个取变量名
+  for(let k in phone){
+ console.log(k)   //k是属性名(字符串类型)    数组里是索引（字符串类型）
+ console.log(phone[k]);  //log('name')打印k是name，里面是'name'  
+  }
+
+  //栈中存放简单数据类型，指向堆中复杂数据类型（对象、数组、函数）的变量地址
+  //item代表数组里面的每一个对象
+
+</script>

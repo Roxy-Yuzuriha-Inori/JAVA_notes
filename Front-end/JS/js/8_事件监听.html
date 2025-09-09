@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <button class="click">点我触发</button>
+  <script>
+    //1.获取按钮节点
+    const button = document.querySelector('.click')
+    //2.给按钮增加监听事件函数(行为，行为后触发的函数)
+    button.addEventListener('click', function () {
+      console.log('被点击后要触发的函数');
+    }, true)   //3.监听函数的第三个参数是控制事件流在捕获阶段（先父再子）还是冒泡阶段触发，默认是false，在冒泡阶段触发
+    //事件流只会在父子元素具有相同事件类型时才会产生影响
+
+    //4. 阻止本层的事件冒泡
+    ev.stopPropagation()
+
+    //5.事件委托（冒泡用途）
+    //如果有多个嵌套关系想给里面的标签增加触发事件，不用全部一个个加
+    //而是给父组件绑定事件，然后通过e.target找到触发事件的标签，然后再对该标签执行相关逻辑
+    // 假设页面中有 10000 个 button 元素
+    const buttons = document.querySelectorAll('table button')
+
+    // 假设上述的 10000 个 buttom 元素共同的祖先元素是 table
+    const parents = document.querySelector('table')
+    parents.addEventListener('click', function (ev) {
+      // console.log(ev.target);
+      // 只有 button 元素才会真正去执行逻辑（进一步限定标签）
+      if (ev.target.tagName === 'BUTTON') {
+        // 执行的逻辑
+      }
+    })
+    //6.事件解绑(事件，函数名)   匿名函数需要提出来给个函数名才能实现解绑
+    parents.removeEventListener('click',fn)
+  </script>
+</body>
+
+</html>

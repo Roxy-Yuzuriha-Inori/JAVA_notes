@@ -1,0 +1,75 @@
+<!-- DOM 文档对象模型 操作网页标签 -->
+<!--DOM对象 每个标签是一个DOM对象 js可以通过api进行获取然后对其进行修改-->
+<!--Document是DOM树中最大的一个对象 里面包含了真个页面 -->
+<body>
+  <ul class="nav"  data-hi="22">
+    <li>测试1</li>
+    <li>测试2</li>
+    <li>测试3</li>
+  </ul>
+</body>
+ <script>
+  //1.获取DOM对象
+  //通过css选择器获取（重点）
+  //选择匹配的第一个
+ const box1 = document.querySelector('css选择器')    //div   .类名   #id   ul li:first-child等
+  //选择匹配的多个
+ const box2 = document.querySelectorAll('css选择器')  //返回的是NodeList对象集合，是一个伪数组没有pop，push方法，有索引和长度
+
+  //2.修改DOM对象属性
+  //单个 调用属性
+  box1.sytle.color='black'      //有些属性如background-color与js减号冲突，所以background-color采用驼峰式命名backgroundColor
+
+  //多个  数组遍历
+  const lis = document.querySelectorAll('ul li')
+  for(let i = 0;i<lis.length;i++){
+    console.log(lis[i]);  
+  }
+  
+  //3.操作对象页面显示内容
+  document.querySelector('').innerText = '<h1>页面要显示的文字<h1>（不解析标签）'
+  document.querySelector('').innerHTML = '<h1>页面要显示的文字<h1>（会解析标签）'
+
+  //4.自定义属性  标签可以用data-属性名进行自定义属性
+  //获取节点后可以用dataset.属性名进行调用
+  const box3 = document.querySelector('.nav')
+ document.write(box3.dataset.hi)   //22
+
+  //5.间歇函数，每隔几秒就执行一次(循环)
+  // 定义一个普通函数
+  function repeat() {
+    console.log('不知疲倦的执行下去....')
+  }
+  // 使用 setInterval 调用 repeat 函数
+  // 间隔 1000 毫秒，重复调用 repeat
+  setInterval(repeat, 1000)
+  
+  //6.通过关系查找元素（标签）节点
+  baby.parentNode     //baby父节点
+  ul.children        //得到节点伪数组，选择的是 亲儿子
+  ul.childrenNodes   //获得所有节点以及其详细信息
+  li.previousElementSibling  //上一个兄弟
+  li.nextElementSibling  //下一个兄弟
+  
+  //7.新增节点
+  //创造一个新节点
+  const div = document.createElement('div')
+  const li = document.createElement('li')
+  //8.追加节点
+  //放在父元素的最后   父元素.appendChild(追加的新子元素)
+  document.body.appendChild(div)   
+
+  //放在父元素某个子元素之前    父元素.insertBefore(追加的新元素，父亲的某个子元素)
+  ul.insertBefore(li,ul.children[0])      //永远在第一个后面插入
+
+  //9.克隆节点
+  const ul = document.querySelector('ul')
+  //克隆ul的第一个孩子节点
+   const li1 = ul.children[0].cloneNode(true)   //true代表连该元素的孩子，显示内容一起克隆
+   //将克隆的孩子进行追加
+   ul.appendChild(li1)
+
+   //10.删除节点
+
+ </script>
+

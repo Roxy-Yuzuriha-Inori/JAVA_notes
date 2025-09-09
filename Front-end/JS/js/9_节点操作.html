@@ -1,0 +1,31 @@
+<script>
+  //1.通过关系查找元素（标签）节点
+  baby.parentNode     //baby父节点
+  ul.children        //得到节点伪数组，选择的是 亲儿子
+  ul.childrenNodes   //获得所有节点以及其详细信息
+  li.previousElementSibling  //上一个兄弟
+  li.nextElementSibling  //下一个兄弟
+  
+  //2.新增节点
+  //创造一个新节点
+  const div = document.createElement('div')
+  const li = document.createElement('li')
+  //3.追加节点
+  //放在父元素的最后   父元素.appendChild(追加的新子元素)
+  document.body.appendChild(div)   
+
+  //放在父元素某个子元素之前    父元素.insertBefore(追加的新元素，父亲的某个子元素)
+  ul.insertBefore(li,ul.children[0])      //永远在第一个后面插入
+
+  //4.克隆节点
+  const ul = document.querySelector('ul')
+  //克隆ul的第一个孩子节点
+   const li1 = ul.children[0].cloneNode(true)   //true代表连该元素的孩子，显示内容一起克隆
+   //将克隆的孩子进行追加
+   ul.appendChild(li1)
+
+   //5.删除节点
+  //通过父元素删除其子元素    父元素.removeChlid（子元素）
+  ul.removeChild(ul.children[0])
+
+</script>

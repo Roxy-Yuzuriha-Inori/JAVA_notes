@@ -1,0 +1,71 @@
+<!--1. 0 和 " " 都为假 -->
+
+<script>
+  // 2.形参可赋默认值
+  function getSum(x = 0, y = 0) {
+    document.write(x + y)
+
+  }
+
+  //3.匿名函数  临时立马要用的函数
+  let fn = function () { }
+  //可以将变量名当作匿名函数函数名进行调用,只能在函数声明后使用
+  fn()
+    //立即执行函数
+    (function () { })()   //本质等价于fn()
+
+  //4.逻辑中断
+  //通过&&和||满足特定的一边另外一边就不执行的特性，实现逻辑中断
+  // 11&22 返回最后一个真值   假值返回原假值,表达式返回false
+  //通过逻辑终端设置默认值
+  function fn2(x, y) {
+    x = x || 0            //如果没传值为undefined为假，0也假，返回最后一个假值0
+    y = y || 2           //如果没传值为undefined为假，2为真，返回真值
+  }
+
+  //5.随机数
+  //N-M随机整数
+  Math.floor(Math.random() * (M - N + 1)) + N
+  parseInt(Math.random() * (M - M + 1)) + N
+
+  //6.数组删除
+  //splice(起始位置（下标），删除几个)   包括起始位置
+  arr.splice(2, 1)
+
+  //7.声明变量有限用const
+  //const = 对象，对象的增删改查不会影响对象的地址，可以用const；如果重新赋值就不能用const了
+  //正确
+  const names = []
+  names.push(2)
+
+  // 错误
+  const name = []
+  name = [1]
+
+  //8.阻止默认行为
+  //添加点击事件，里面写上阻止默认行为的函数
+  a.addEventListener('click', function (e) {
+    e.preventDefault()
+  })
+
+  //9.时间戳换算
+  //得到时间差值
+  const now = +new Date()
+  const last = +new Date('2028-5-1 18:30:00')  //注意格式
+  const count = (now - last) / 1000   //换成秒数
+  //换算公式
+ let d = parseInt(总秒数 / 60 / 60 / 24); // 计算天数
+ let h = parseInt(总秒数 / 60 / 60 % 24) // 计算小时
+ let m = parseInt(总秒数 / 60 % 60); // 计算分数
+ let s = parseInt(总秒数 % 60); // 计算当前秒数
+//dhms(天时秒分)都要格式化补0
+h = h < 10 ? '0' + h : h
+
+  //10.forEach方法遍历数组 不返回结果
+  var arr = [1,2,3,4];
+  arr.forEach(function(item,index){   ///item是数组的元素，index是索引(可选项)
+    console.log(item,index);   //打印结果是：1 0 2 1 3 2 4 3 
+  })
+
+
+</script>
