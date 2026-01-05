@@ -24,6 +24,8 @@ export default function Gallery() {
 
 ```
 3. JSX的{{}}代表{}里面放了一个对象<br/>
+4. 在 JSX 里，属性值写法一：字符串字面量，用引号 " 包裹；写法二：JavaScript 表达式，用花括号 {} 包裹<br/>
+任何不是纯字符串的东西（数字、布尔值、数组、对象、函数调用、变量、条件表达式等），都属于 JavaScript 表达式，必须用 {}。
 ```jsx
 //使用驼峰命名法编写<ul style="background-color: black">
 <ul style={{ backgroundColor: 'black' }}>
