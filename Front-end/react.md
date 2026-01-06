@@ -42,7 +42,7 @@ export default function Gallery() {
 3. 导入和导出的名字必须一致<br/>
 
 ## Props
-1. 作为子组件的形参，写在子组件的形参<br/>
+1. 作为子组件的形参<br/>
 2. 当其他组件调用组件时，传入参数
 ```js
 //utils.js
@@ -97,6 +97,38 @@ export default function Profile() {
         }}
       />
     </Card>
+  );
+}
+```
+3. 需要组件为双标签，标签夹的是其他组件，可以在定义组件时传入{children}
+```jsx
+function Card({ children, title }) {
+  return (
+    <div className="card">
+      <div className="card-content">
+        <h1>{title}</h1>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export default function Profile() {
+  return (
+    <div>
+      <Card title="Photo">
+        <img
+          className="avatar"
+          src="https://i.imgur.com/OKS67lhm.jpg"
+          alt="Aklilu Lemma"
+          width={100}
+          height={100}
+        />
+      </Card>
+      <Card title="About">
+        <p>Aklilu Lemma was a distinguished Ethiopian scientist who discovered a natural treatment to schistosomiasis.</p>
+      </Card>
+    </div>
   );
 }
 ```
