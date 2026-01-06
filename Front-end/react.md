@@ -30,6 +30,7 @@ export default function Gallery() {
 //使用驼峰命名法编写<ul style="background-color: black">
 <ul style={{ backgroundColor: 'black' }}>
 ```
+
 ## 组件的导入与导出
 ### 默认导入导出
 1. 导出：export default function Button() {}<br/>
@@ -132,4 +133,90 @@ export default function Profile() {
   );
 }
 ```
+## 条件渲染
+- 与运算符（&&）
+  - isPacked为true就渲染后面的
+```jsx
+return (
+  <li className="item">
+    {name} {isPacked && '✅'}
+  </li>
+);
+```
+## 列表渲染
+- 数组就用map等方法进行遍历
+- map里面的回调函数的函数体最外层写key
+- 什么时候用{} ？ 属性赋值；双标签内；单开表达式
+```jsx
+export const recipes = [
+  {
+    id: 'greek-salad',
+    name: '希腊沙拉',
+    ingredients: ['西红柿', '黄瓜', '洋葱', '油橄榄', '羊奶酪'],
+  },
+  {
+    id: 'hawaiian-pizza',
+    name: '夏威夷披萨',
+    ingredients: ['披萨饼皮', '披萨酱', '马苏里拉奶酪', '火腿', '菠萝'],
+  },
+  {
+    id: 'hummus',
+    name: '鹰嘴豆泥',
+    ingredients: ['鹰嘴豆', '橄榄油', '蒜瓣', '柠檬', '芝麻酱'],
+  },
+];
+export default function RecipeList() {
+  return (
+    <div>
+      <h1>菜谱</h1>
+      // 单开表达式用{}
+      {recipes.map(recipe =>
+      //最外层div写key
+        <div key={recipe.id}>
+          <h2>{recipe.name}</h2>
+          <ul>
+            {recipe.ingredients.map(ingredient =>
+            //最外层li写key
+              <li key={ingredient}>
+                {ingredient}
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+//将里面做成组件
+import { recipes } from './data.js';
+function Recipe({ id, name, ingredients }) {
+  return (
+    <div>
+      <h2>{name}</h2>
+      <ul>
+        {ingredients.map(ingredient =>
+          <li key={ingredient}>
+            {ingredient}
+          </li>
+        )}
+      </ul>
+    </div>
+  );
+}
+
+export default function RecipeList() {
+  return (
+    <div>
+      <h1>菜谱</h1>
+      {recipes.map(recipe =>
+        <Recipe {...recipe} key={recipe.id} />
+      )}
+    </div>
+  );
+}
+
+```
+
+# 添加交互
 ## 
