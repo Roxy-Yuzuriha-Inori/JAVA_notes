@@ -219,4 +219,91 @@ export default function RecipeList() {
 ```
 
 # 添加交互
-## 
+## 响应事件
+- 可以将函数名作为props传入组件调用函数
+```jsx
+export default function Button() {
+  function handleClick() {
+    alert('你点击了我！');
+  }
+
+  return (
+    //写handleClick（）会在渲染时立即执行
+    <button onClick={handleClick}>
+      点我
+    </button>
+  );
+}
+```
+- 直接写箭头函数
+```jsx
+<button onClick={() => {
+  alert('你点击了我！');
+}}>
+```
+- 阻止事件传播e.stopPropagation();
+```jsx
+function Button({ onClick, children }) {
+  return (
+    <button onClick={e => {
+      e.stopPropagation();
+      onClick();
+    }}>
+      {children}
+    </button>
+  );
+}
+
+export default function Toolbar() {
+  return (
+    <div className="Toolbar" onClick={() => {
+      alert('你点击了 toolbar ！');
+    }}>
+      <Button onClick={() => alert('正在播放！')}>
+        播放电影
+      </Button>
+      <Button onClick={() => alert('正在上传！')}>
+        上传图片
+      </Button>
+    </div>
+  );
+}
+
+```
+- 阻止默认行为
+```jsx
+export default function Signup() {
+  return (
+    <form onSubmit={e => {
+      e.preventDefault();
+      alert('提交表单！');
+    }}>
+      <input />
+      <button>发送</button>
+    </form>
+  );
+}
+```
+## state
+- State 变量 用于保存上次渲染的数据。<br/>
+- State setter 函数更新变量并触发 React 再次渲染组件,在return的jsx中调用<br/>
+- state 完全私有于声明它的组件，并且同一组件隔离不影响<br/>
+- Hook 只能在组件函数的顶层调用.
+```jsx
+const [index,setIndex] = useState(0); //设置index初始值为0
+```
+## 渲染与提交
+- 初渲染
+```jsx
+import { createRoot } from 'react-dom/client';
+//获取根节点
+const root = createRoot(document.getElementById('root'))
+//触发渲染
+root.render(<Image />);
+//自动执行commit阶段  
+/*
+初次渲染（mount）：通常会创建整棵 DOM 子树，并在 commit 阶段使用 appendChild/insertBefore 把它们挂到容器（#root）上。
+后续更新（update）：不会整棵重建，而是根据 diff 只做必要的 DOM 操作（属性更新、节点插入/删除/移动），仍旧在 commit 阶段完成。
+*/
+```
+
