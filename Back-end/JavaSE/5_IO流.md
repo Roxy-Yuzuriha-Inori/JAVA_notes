@@ -369,3 +369,187 @@ Java 对象序列化规则
 6. 序列化具备可继承性，也就是如果某类已经实现了序列化，则它的所有子类也已经默认实现了序列化
 
 ## 标准输入输出流
+### 标准输入
+编译类型：InputStream（声明时的类型）
+运行类型：BufferedInputStream（实际运行时的类型）
+作用：代表标准输入设备（键盘）
+### 标准输出
+编译类型：PrintStream
+运行类型：PrintStream（编译类型和运行类型相同）
+作用：代表标准输出设备（显示器/控制台）
+
+## 转换流
+问题：要用字符流，但字符流编码不一致
+解决：传入字节流，转成字符流，并指定编码来读取，比如传入InputStream对象并指定处理的编码
+```java
+//以指定的编码读取和写入文件
+import java.io.*;
+
+public class CharacterStreamDemo {
+    public static void main(String[] args) {
+        // 1. 使用OutputStreamWriter写入文件（UTF-8编码）
+        writeFileWithUTF8();
+        
+        // 2. 使用InputStreamReader读取文件（GBK编码）
+        readFileWithGBK();
+        
+        // 3. 编码转换示例
+        convertEncoding();
+    }
+    
+    // 写入文件（UTF-8编码）
+    public static void writeFileWithUTF8() {
+        String filePath = "test_utf8.txt";
+        String content = "Hello, 世界! 这是UTF-8编码的文本。";
+        
+        try (OutputStreamWriter writer = new OutputStreamWriter(
+                new FileOutputStream(filePath), "UTF-8")) {
+            writer.write(content);
+            System.out.println("UTF-8文件写入成功: " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    // 读取文件（GBK编码）
+    public static void readFileWithGBK() {
+        String filePath = "test_gbk.txt";
+        
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(new FileInputStream(filePath), "GBK"))) {
+            
+            String line;
+            System.out.println("GBK文件内容:");
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    // 编码转换示例
+    public static void convertEncoding() {
+        String inputFile = "input_utf8.txt";
+        String outputFile = "output_gbk.txt";
+        
+        try {
+            // 创建输入文件（UTF-8）
+            try (OutputStreamWriter writer = new OutputStreamWriter(
+                    new FileOutputStream(inputFile), "UTF-8")) {
+                writer.write("这是UTF-8编码的原始文件");
+            }
+            
+            // 读取UTF-8文件，转换为GBK写入新文件
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(new FileInputStream(inputFile), "UTF-8"));
+                 OutputStreamWriter writer = new OutputStreamWriter(
+                    new FileOutputStream(outputFile), "GBK")) {
+                
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    writer.write(line);
+                    writer.write("\n");
+                }
+            }
+            
+            System.out.println("编码转换完成: UTF-8 -> GBK");
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+## 配置文件处理
+```java
+import java.io.*;
+import java.util.Properties;
+
+public class PropertiesDemo {
+    public static void main(String[] args) {
+        // 1. 创建配置文件
+        createPropertiesFile();
+        
+        // 2. 读取配置文件
+        readPropertiesFile();
+        
+        // 3. 修改配置文件
+        modifyPropertiesFile();
+    }
+    
+    // 创建配置文件
+    public static void createPropertiesFile() {
+        try {
+            Properties properties = new Properties();
+            
+            // 设置数据库配置
+            properties.setProperty("db.driver", "com.mysql.cj.jdbc.Driver");
+            properties.setProperty("db.url", "jdbc:mysql://localhost:3306/testdb");
+            properties.setProperty("db.username", "root");
+            properties.setProperty("db.password", "123456");
+            properties.setProperty("db.charset", "utf8");
+            
+            // 设置应用配置
+            properties.setProperty("app.name", "我的应用");
+            properties.setProperty("app.version", "1.0.0");
+            properties.setProperty("app.debug", "true");
+            
+            // 保存到文件
+            try (FileOutputStream fos = new FileOutputStream("config.properties")) {
+                properties.store(fos, "应用程序配置文件");
+                System.out.println("配置文件创建成功！");
+            }
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    // 读取配置文件
+    public static void readPropertiesFile() {
+        try (FileInputStream fis = new FileInputStream("config.properties")) {
+            Properties properties = new Properties();
+            properties.load(fis);
+            
+            System.out.println("\n=== 配置文件内容 ===");
+            properties.list(System.out);
+            
+            System.out.println("\n=== 特定配置项 ===");
+            System.out.println("数据库URL: " + properties.getProperty("db.url"));
+            System.out.println("应用名称: " + properties.getProperty("app.name"));
+            System.out.println("调试模式: " + properties.getProperty("app.debug"));
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    // 修改配置文件
+    public static void modifyPropertiesFile() {
+        try {
+            Properties properties = new Properties();
+            
+            // 先加载现有配置
+            try (FileInputStream fis = new FileInputStream("config.properties")) {
+                properties.load(fis);
+            }
+            
+            // 修改配置
+            properties.setProperty("app.version", "1.1.0");
+            properties.setProperty("app.debug", "false");
+            properties.setProperty("db.password", "newpassword");
+            
+            // 保存修改后的配置
+            try (FileOutputStream fos = new FileOutputStream("config.properties")) {
+                properties.store(fos, "修改后的应用程序配置文件");
+                System.out.println("\n配置文件修改成功！");
+            }
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
