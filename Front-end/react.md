@@ -287,10 +287,106 @@ export default function Signup() {
 ## state
 - State 变量 用于保存上次渲染的数据。<br/>
 - State setter 函数更新变量并触发 React 再次渲染组件,在return的jsx中调用<br/>
+- set函数行为是根据这次渲染的值准备下次渲染的值，不是直接赋值<br/>
 - state 完全私有于声明它的组件，并且同一组件隔离不影响<br/>
 - Hook 只能在组件函数的顶层调用.
 ```jsx
 const [index,setIndex] = useState(0); //设置index初始值为0
+
+<button onClick={() => {
+  //这次渲染的值为0，准备下次渲染的值为1
+  setNumber(number + 1);
+  //这次渲染的值为0，准备下次渲染的值为1
+  setNumber(number + 1);
+  //这次渲染的值为0，准备下次渲染的值为1
+  setNumber(number + 1);
+}}>+3</button>
+
+
+//一个 state 变量的值永远不会在一次渲染的内部发生变化
+export default function Counter() {
+  const [number, setNumber] = useState(0);
+
+  return (
+    <>
+      <h1>{number}</h1>
+      <button onClick={() => {
+        //触发渲染 number为 0 + 5
+        setNumber(number + 5);
+        setTimeout(() => {
+          //一个 state 变量的值永远不会在一次渲染的内部发生变化，number还是0
+          alert(number);   // 0
+        }, 3000);
+      }}>+5</button>
+    </>
+  )
+}
+
+
+//虽然number不会发生变化，但可以通过更新函数让react统一处理
+export default function Counter() {
+  const [number, setNumber] = useState(0);
+
+  return (
+    <>
+      <h1>{number}</h1>
+      <button onClick={() => {
+        //发现是更新函数，加入队列
+        setNumber(n => n + 1);
+        //发现是更新函数，加入队列
+        setNumber(n => n + 1);
+        //发现是更新函数，加入队列
+        setNumber(n => n + 1);
+        //渲染时，第二个函数的n直接获得第一个函数的返回值，number不参与
+        // 0 -> 3
+      }}>+3</button>   
+    </>
+  )
+}
+
+//例一 
+<button onClick={() => {
+  //React 将 “替换为 5” 添加到其队列中。
+  setNumber(number + 5);
+  //下一次渲染期间，获取上一个函数返回值进行计算
+  setNumber(n => n + 1);     //0 -> 6
+}}>
+
+//例二
+<button onClick={() => {
+  //准备给number赋值为1
+  setNumber(n => n + 1); 
+  //获取快照number0，准备给number赋值为5
+  setNumber(number + 5);    //0 -> 5
+}}>
+
+```
+- set函数更新算法
+```jsx
+/**
+ * 非函数式：获取number快照给number赋值
+ * 函数式：获取队列中上一个的值给number赋值
+ **/
+
+//两个参数：baseState 是初始状态（例如：0），queue 是一个既包含数字（例如：5）也包含更新函数（例如：n => n + 1）的数组
+//初始 state：0
+//队列：[5, n => n+1]
+export function getFinalState(baseState, queue) {
+  let finalState = baseState;
+
+  for (let update of queue) {
+    if (typeof update === 'function') {
+      // 调用更新函数
+      finalState = update(finalState);
+    } else {
+      // 替换下一个 state
+      finalState = update;
+    }
+  }
+
+  return finalState;
+}
+
 ```
 ## 渲染与提交
 - 初渲染
@@ -306,4 +402,205 @@ root.render(<Image />);
 后续更新（update）：不会整棵重建，而是根据 diff 只做必要的 DOM 操作（属性更新、节点插入/删除/移动），仍旧在 commit 阶段完成。
 */
 ```
+## 更新state中的对象
+- 改变对象中的值，但对象的地址不会发生改变，从而不会触发React重新渲染，所以要传新的对象
+```jsx
+//使用...展开运算符赋值
+  function handleFirstNameChange(e) {
+    setPerson({
+      ...person,
+      firstName: e.target.value
+    });
+  }
 
+//...是浅拷贝，拷贝不了嵌套对象，要在嵌套的对象中也使用...
+setPerson({
+  ...person, // 复制其它字段的数据 
+  artwork: { // 替换 artwork 字段 
+    ...person.artwork, // 复制之前 person.artwork 中的数据
+    city: 'New Delhi' // 但是将 city 的值替换为 New Delhi！
+  }
+});
+
+//嵌套对象应看作多个对象，然后通过地址指向
+let obj = {
+  name: 'Niki de Saint Phalle',
+  artwork: {
+    title: 'Blue Nana',
+    city: 'Hamburg',
+    image: 'https://i.imgur.com/Sd1AgUOm.jpg',
+  }
+};
+//实际上
+let obj1 = {
+  title: 'Blue Nana',
+  city: 'Hamburg',
+  image: 'https://i.imgur.com/Sd1AgUOm.jpg',
+};
+
+let obj2 = {
+  name: 'Niki de Saint Phalle',
+  artwork: obj1
+};
+```
+
+- 动态赋值 []
+```jsx
+//使用[]动态赋值
+import { useState } from 'react';
+
+export default function Form() {
+  const [person, setPerson] = useState({
+    firstName: 'Barbara',
+    lastName: 'Hepworth',
+    email: 'bhepworth@sculpture.com'
+  });
+  //非动态赋值要写三个handleChange，对应修改三个不同的对象属性值
+  function handleChange(e) {
+    setPerson({
+      ...person,
+      //动态赋值
+      [e.target.name]: e.target.value
+    });
+  }
+
+  return (
+    <>
+      <label>
+        First name:
+        <input
+          name="firstName"
+          value={person.firstName}
+          //修改firstName
+          onChange={handleChange}
+        />
+      </label>
+      <label>
+        Last name:
+        <input
+          name="lastName"
+          value={person.lastName}
+          //修改lastName
+          onChange={handleChange}
+        />
+      </label>
+      <label>
+        Email:
+        <input
+          name="email"
+          value={person.email}
+          //修改email
+          onChange={handleChange}
+        />
+      </label>
+      <p>
+        {person.firstName}{' '}
+        {person.lastName}{' '}
+        ({person.email})
+      </p>
+    </>
+  );
+}
+```
+- 使用 Immer修改嵌套对象的值
+   - 运行 npm install use-immer 添加 Immer 依赖
+   - 用 import { useImmer } from 'use-immer' 替换掉 import { useState } from 'react' 
+- 由 Immer 提供的 draft 是一种特殊类型的对象，被称为 Proxy，它会记录你用它所进行的操作。这就是你能够随心所欲地直接修改对象的原因所在！从原理上说，Immer 会弄清楚 draft 对象的哪些部分被改变了，并会依照你的修改创建出一个全新的对象
+```jsx
+//参数必须是draft,draft是原对象的代理，只需修改对应的属性值，immer会创建一个新的对象
+updatePerson(draft => {
+  draft.artwork.city = 'Lagos';
+});
+```
+## 更新state中的数组
+- 推荐使用能返回新数组的数组方法，避免使用会改变原始数组的方法
+```jsx
+//添加元素concat，[...arr]
+setArtists( // 使用set函数改变值，不直接替换 state
+//传入一个新数组
+  [ 
+    ...artists, // 新数组包含原数组的所有元素
+    { id: nextId++, name: name } // 并在末尾添加了一个新的元素
+  ]
+);
+
+//删除元素filter，slice
+setArtists(
+  artists.filter(a => a.id !== artist.id)
+);
+
+//替换元素map
+    const nextCounters = counters.map((c, i) => {
+      if (i === index) {
+        // 递增被点击的计数器数值
+        return c + 1;
+      } else {
+        // 其余部分不发生变化
+        return c;
+      }
+    })
+
+//插入元素（将原数组分片再前后展开，中间放要插入的元素）
+    const insertAt = 1; // 可能是任何索引
+    const nextArtists = [
+      // 插入点之前的元素：
+      ...artists.slice(0, insertAt),
+      // 新的元素：
+      { id: nextId++, name: name },
+      // 插入点之后的元素：
+      ...artists.slice(insertAt)
+    ];
+    setArtists(nextArtists);
+
+//排序 reverse，sort改变的原数组 可以先copy一个新数组
+  function handleClick() {
+    //copy一个新数组
+    const nextList = [...list];
+    //对新数组反转
+    nextList.reverse();
+    //传新数组
+    setList(nextList);
+  }
+```
+- 数组用...也是浅拷贝，数组元素如果是对象，对象的地址也会被拷贝过来，从而是同一个地址
+```jsx
+//问题：
+//修改了state值
+  function handleToggleMyList(artworkId, nextSeen) {
+    //copy数组
+    const myNextList = [...myList];
+    //找到目标对象
+    const artwork = myNextList.find(
+      a => a.id === artworkId
+    );
+    //直接修改数组对象的值
+    artwork.seen = nextSeen;
+    setMyList(myNextList);
+  }
+
+//解决：
+//map遍历修改数组中每个对象，返回新的对象
+  function handleToggleMyList(artworkId, nextSeen) {
+    setMyList(myList.map(artwork => {
+      if (artwork.id === artworkId) {
+        // 创建包含变更的*新*对象
+        return { ...artwork, seen: nextSeen };
+      } else {
+        // 没有变更
+        return artwork;
+      }
+    }));
+  }
+
+//用immer:
+
+  function handleToggleMyList(id, nextSeen) {
+    updateMyList(draft => {
+      const artwork = draft.find(a =>
+        a.id === id
+      );
+      artwork.seen = nextSeen;
+    });
+  }
+```
+# 状态管理
