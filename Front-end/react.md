@@ -604,3 +604,45 @@ setArtists(
   }
 ```
 # 状态管理
+## 用state响应输入
+- 用state给几种状态情形取名字，然后通过改state改名字切换情形
+```jsx
+//例题1：用状态控制显示不同的css样式
+//第一种状态：外部'background' 图片 'picture picture--active'
+//第二种状态：外部'background background--active' 图片 'picture'
+import { useState } from 'react';
+
+export default function Picture() {
+  //用isActive表示两种状态
+  const [isActive, setIsActive] = useState(false);
+
+  let backgroundClassName = 'background';
+  let pictureClassName = 'picture';
+  //描述不同的状态，通过isActive控制
+  if (isActive) {
+    pictureClassName += ' picture--active';
+  } else {
+    backgroundClassName += ' background--active';
+  }
+
+  return (
+    <div
+      className={backgroundClassName}
+      //改变isActive从而改变状态
+      onClick={() => setIsActive(false)}
+    >
+      <img
+        onClick={e => {
+          //阻止冒泡触发div的onClick
+          e.stopPropagation();
+          setIsActive(true);
+        }}
+        className={pictureClassName}
+        alt="Rainbow houses in Kampung Pelangi, Indonesia"
+        src="https://i.imgur.com/5qwVYb1.jpeg"
+      />
+    </div>
+  );
+}
+
+```
