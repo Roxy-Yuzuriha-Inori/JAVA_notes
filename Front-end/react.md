@@ -646,3 +646,68 @@ export default function Picture() {
 }
 
 ```
+## 选择State结构
+- state在组件内部被传值只有初始化时有用
+```jsx
+import { useState } from 'react';
+export default function Clock(props) {
+  //多次传值不会更新color, state 仅在第一次渲染期间初始化
+  const [color, setColor] = useState(props.color);
+  //正确做法：直接用变量接收即可
+  const color = props.color
+  return (
+    <h1 style={{ color: color }}>
+      {props.time}
+    </h1>
+  );
+}
+
+```
+
+- 去掉冗余的State,比如可由其他State派生出的变量
+```jsx
+//三个State
+let nextId = 3;
+const initialItems = [
+  { id: 0, title: 'Warm socks', packed: true },
+  { id: 1, title: 'Travel journal', packed: false },
+  { id: 2, title: 'Watercolors', packed: false },
+];
+
+export default function TravelPlan() {
+  const [items, setItems] = useState(initialItems);
+  const [total, setTotal] = useState(3);
+  const [packed, setPacked] = useState(1);
+}
+
+//total,packed可由initialItems派生
+let nextId = 3;
+const initialItems = [
+  { id: 0, title: 'Warm socks', packed: true },
+  { id: 1, title: 'Travel journal', packed: false },
+  { id: 2, title: 'Watercolors', packed: false },
+];
+
+export default function TravelPlan() {
+  const [items, setItems] = useState(initialItems);
+
+  const total = items.length;
+  const packed = items
+    .filter(item => item.packed)
+    .length;
+}
+```
+数组方法
+```java
+const arr = [ {id: 1}, {id: 2}, {id: 2} ];
+
+// filter：返回“所有匹配项”的数组
+const a = arr.filter(x => x.id === 2); // => [ {id:2}, {id:2} ]（数组）
+a.length;       // 2
+Array.isArray(a); // true
+
+// find：返回“第一个匹配项”的对象
+const b = arr.find(x => x.id === 2);   // => {id:2}（对象）
+```
+- 
+
