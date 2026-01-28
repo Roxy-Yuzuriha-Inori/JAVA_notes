@@ -709,5 +709,18 @@ Array.isArray(a); // true
 // find：返回“第一个匹配项”的对象
 const b = arr.find(x => x.id === 2);   // => {id:2}（对象）
 ```
-- 
+- 尽量不要用对象作比较，因为触发渲染后前后对象不一样
+- 例子：https://zh-hans.react.dev/learn/choosing-the-state-structure#challenges 挑战三
+
+## 在组件间共享状态
+- 将子组件的状态提升到父组件，状态改变函数等全写在父组件，子组件只需接受参数即可
+
+## 对state进行保留和重置
+- UI树相同位置的相同组件会将state保留下来<br/>
+- 如何在相同位的相同组件重置 state
+```jsx
+
+```
+- 相同位置不同组件会重置，比如div变成section包裹，内部组件会重置<br/>
+- 组件定义不能嵌套，外部组件更新会导致内部组件不是同一个组件，不会保留state
 
