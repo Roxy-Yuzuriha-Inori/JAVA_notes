@@ -716,11 +716,468 @@ const b = arr.find(x => x.id === 2);   // => {id:2}（对象）
 - 将子组件的状态提升到父组件，状态改变函数等全写在父组件，子组件只需接受参数即可
 
 ## 对state进行保留和重置
-- UI树相同位置的相同组件会将state保留下来<br/>
+- UI树相同位置的相同组件会将state保留下来
 - 如何在相同位的相同组件重置 state
 ```jsx
+//组件在相同位置
+export default function Scoreboard() {
+  const [isPlayerA, setIsPlayerA] = useState(true);
+  return (
+    <div>
+      {isPlayerA ? (
+        <Counter person="Taylor" />
+      ) : (
+        <Counter person="Sarah" />
+      )}
+      <button onClick={() => {
+        setIsPlayerA(!isPlayerA);
+      }}>
+        下一位玩家！
+      </button>
+    </div>
+  );
+}
+
+
+//方法一：将组件渲染在不同的位置 
+export default function Scoreboard() {
+  const [isPlayerA, setIsPlayerA] = useState(true);
+  return (
+    <div>
+      {isPlayerA &&
+        <Counter person="Taylor" />
+      }
+      {!isPlayerA &&
+        <Counter person="Sarah" />
+      }
+      <button onClick={() => {
+        setIsPlayerA(!isPlayerA);
+      }}>
+        下一位玩家！
+      </button>
+    </div>
+  );
+}
+
+
+//方法二：使用 key 来重置 state
+export default function Scoreboard() {
+  const [isPlayerA, setIsPlayerA] = useState(true);
+  return (
+    <div>
+      {isPlayerA ? (
+        <Counter key="Taylor" person="Taylor" />
+      ) : (
+        <Counter key="Sarah" person="Sarah" />
+      )}
+      <button onClick={() => {
+        setIsPlayerA(!isPlayerA);
+      }}>
+        下一位玩家！
+      </button>
+    </div>
+  );
+}
+//指定 key 之后，如果组件没有被卸载，并且渲染出来的组件类型和 key 保持一致，React 会复用该组件实例，从而保留 state
+```
+- 相同位置不同组件会重置，比如div变成section包裹，内部组件会重置
+- 组件定义不能嵌套，外部组件更新会导致内部组件不是同一个组件，不会保留state
+
+## 迁移状态逻辑至 Reducer 中
+- 对于一个state不同的更新行为，可以统一整合到Reducer中
+```jsx
+export default function TaskApp() {
+ //1.引入钩子
+ //1.1 tasks : 相当于state，当前的状态
+ //1.2 initialTasks ： 相当于给state赋初值
+ //1.3 dispatch函数 ：接收action对象（存放状态变更信息，type用于区分），里面调用set函数和Reducer函数，返回下一个值
+ //1.4 tasksReducer：统一处理修改tasks值,修改后的值从dispatch传来，返回下一个值
+ const [tasks, dispatch] = useReducer(tasksReducer, initialTasks);
+
+//2. 写包含dispatch的函数
+  function handleAddTask(text) {
+    dispatch({
+      type: 'added',
+      id: nextId++,
+      text: text,
+    });
+  }
+
+  function handleChangeTask(task) {
+    dispatch({
+      type: 'changed',
+      task: task,
+    });
+  }
+
+  function handleDeleteTask(taskId) {
+    dispatch({
+      type: 'deleted',
+      id: taskId,
+    });
+  }
+
+  return (
+    <>
+      <h1>布拉格的行程安排</h1>
+      <AddTask onAddTask={handleAddTask} />
+      <TaskList
+        tasks={tasks}
+        //3.调用含dispatch的函数，dispatch调用tasksReducer传action对象和tasks
+        onChangeTask={handleChangeTask}
+        onDeleteTask={handleDeleteTask}
+      />
+    </>
+  );
+}
+//4.通过switch来决定对tasks实现哪种修改
+function tasksReducer(tasks, action) {
+  switch (action.type) {
+    case 'added': {
+      return [
+        ...tasks,
+        {
+          id: action.id,
+          text: action.text,
+          done: false,
+        },
+      ];
+    }
+    case 'changed': {
+      return tasks.map((t) => {
+        if (t.id === action.task.id) {
+          return action.task;
+        } else {
+          return t;
+        }
+      });
+    }
+    case 'deleted': {
+      return tasks.filter((t) => t.id !== action.id);
+    }
+    default: {
+      throw Error('未知 action: ' + action.type);
+    }
+  }
+}
+
+let nextId = 3;
+const initialTasks = [
+  {id: 0, text: '参观卡夫卡博物馆', done: true},
+  {id: 1, text: '看木偶戏', done: false},
+  {id: 2, text: '打卡列侬墙', done: false}
+];
 
 ```
-- 相同位置不同组件会重置，比如div变成section包裹，内部组件会重置<br/>
-- 组件定义不能嵌套，外部组件更新会导致内部组件不是同一个组件，不会保留state
+- 用immer进行简化，即不要求tasksReducer中返回的是一个新对象
+```jsx
+import { useImmerReducer } from 'use-immer';
+import AddTask from './AddTask.js';
+import TaskList from './TaskList.js';
+
+function tasksReducer(draft, action) {
+  switch (action.type) {
+    case 'added': {
+      draft.push({
+        id: action.id,
+        text: action.text,
+        done: false,
+      });
+      break;
+    }
+    case 'changed': {
+      const index = draft.findIndex((t) => t.id === action.task.id);
+      draft[index] = action.task;
+      break;
+    }
+    case 'deleted': {
+      return draft.filter((t) => t.id !== action.id);
+    }
+    default: {
+      throw Error('未知 action：' + action.type);
+    }
+  }
+}
+
+```
+- 修改state的结构，只需再reducer中修改赋值结构
+```jsx
+//App.js
+import { useReducer } from 'react';
+import Chat from './Chat.js';
+import ContactList from './ContactList.js';
+import { initialState, messengerReducer } from './messengerReducer';
+
+export default function Messenger() {
+  const [state, dispatch] = useReducer(messengerReducer, initialState);
+  //对于对象，当属性名固定时 用.
+  //对于对象，当属性名是表达式时 用[]
+  const message = state.messages[state.selectedId];
+  //找到contacts中与state中selectedId相同的contact
+  const contact = contacts.find((c) => c.id === state.selectedId);
+  return (
+    <div>
+      <ContactList
+        contacts={contacts}
+        selectedId={state.selectedId}
+        dispatch={dispatch}
+      />
+      <Chat
+        key={contact.id}
+        message={message}
+        contact={contact}
+        dispatch={dispatch}
+      />
+    </div>
+  );
+}
+
+const contacts = [
+  {id: 0, name: 'Taylor', email: 'taylor@mail.com'},
+  {id: 1, name: 'Alice', email: 'alice@mail.com'},
+  {id: 2, name: 'Bob', email: 'bob@mail.com'},
+];
+```
+```jsx
+//messagerReducer.js
+export const initialState = {
+  selectedId: 0,
+  messages: {
+    0: 'Hello, Taylor',
+    1: 'Hello, Alice',
+    2: 'Hello, Bob',
+  },
+};
+
+export function messengerReducer(state, action) {
+  switch (action.type) {
+    case 'changed_selection': {
+      return {
+        ...state,
+        selectedId: action.contactId,
+      };
+    }
+    case 'edited_message': {
+      return {
+        ...state,
+        messages: {
+          ...state.messages,
+          [state.selectedId]: action.message,
+        },
+      };
+    }
+    case 'sent_message': {
+      return {
+        ...state,
+        messages: {
+          ...state.messages,
+          [state.selectedId]: '',
+        },
+      };
+    }
+    default: {
+      throw Error('未知 action：' + action.type);
+    }
+  }
+}
+
+```
+```jsx
+//ContactList.js
+export default function ContactList({contacts, selectedId, dispatch}) {
+  return (
+    <section className="contact-list">
+      <ul>
+        {contacts.map((contact) => (
+          <li key={contact.id}>
+            <button
+              onClick={() => {
+                dispatch({
+                  type: 'changed_selection',
+                  contactId: contact.id,
+                });
+              }}>
+              {selectedId === contact.id ? <b>{contact.name}</b> : contact.name}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+```
+```jsx
+//Chat.js
+import { useState } from 'react';
+
+export default function Chat({contact, message, dispatch}) {
+  return (
+    <section className="chat">
+      <textarea
+        value={message}
+        placeholder={'和 ' + contact.name + ' 聊天'}
+        onChange={(e) => {
+          dispatch({
+            type: 'edited_message',
+            message: e.target.value,
+          });
+        }}
+      />
+      <br />
+      <button
+        onClick={() => {
+          alert(`正在发送 "${message}" 到 ${contact.email}`);
+          dispatch({
+            type: 'sent_message',
+          });
+        }}>
+        发送到 {contact.email}
+      </button>
+    </section>
+  );
+}
+```
+### useReducer实现
+```jsx
+import { useState } from 'react';
+
+//传入reducer函数和初始值，返回目前的状态和dispatch函数
+export function useReducer(reducer, initialState) {
+  const [state, setState] = useState(initialState);
+
+//dispatch函数：接收action对象（存将变值），返回下一个状态
+function dispatch(action) {
+  //通过setState变化值
+  //setState中，reducer函数接受目前的状态和action(存变化数据)，返回下一个状态
+  setState((s) => reducer(s, action));
+}
+  return [state, dispatch];
+}
+
+```
+## 使用Context深层传递参数
+- 创建context，相当于创一个context标签并导出createContext()
+```jsx
+import { createContext } from 'react';
+export const LevelContext = createContext(1);
+```
+- 子组件引入并创建参数useContext()
+```jsx
+import { LevelContext } from './LevelContext.js';
+export default function Heading({ children }) {
+  //子组件的level值会找上层最近父组件的LevelContext标签的value，如果没有，用createContext(1)的默认值1
+  const level = useContext(LevelContext);
+   switch (level) {
+    case 1:
+      return <h1>{children}</h1>;
+    case 2:
+      return <h2>{children}</h2>;
+    default:
+      throw Error('未知的 level：' + level);
+  }
+}
+```
+- 父组件用LevelContext将子组件包裹
+```jsx
+import { LevelContext } from './LevelContext.js';
+
+export default function Section({ level, children }) {
+    // 需要调用section的父组件传值 或者 在该组件加上 const level = useContext(LevelContext)获取默认值
+  return (
+    <section className="section">
+      <LevelContext value={level}>
+        {children}
+      </LevelContext>
+    </section>
+  );
+}
+
+```
+- app.js调用section
+```jsx
+import Heading from './Heading.js';
+import Section from './Section.js';
+
+export default function Page() {
+  return (
+    <Section level={1}>
+      <Heading>主标题</Heading>
+      <Section level={2}>
+        <Heading>副标题</Heading>
+        <Heading>副标题</Heading>
+        <Heading>副标题</Heading>
+        <Section level={3}>
+          <Heading>子标题</Heading>
+          <Heading>子标题</Heading>
+          <Heading>子标题</Heading>
+          <Section level={4}>
+            <Heading>子子标题</Heading>
+            <Heading>子子标题</Heading>
+            <Heading>子子标题</Heading>
+          </Section>
+        </Section>
+      </Section>
+    </Section>
+  );
+}
+
+```
+### 总结
+context能代替props的参数传递，深层可用hook找到外层的值
+
+## 使用 Reducer 和 Context 拓展你的应用
+https://zh-hans.react.dev/learn/scaling-up-with-reducer-and-context#recap
+
+# 脱围机制
+## 使用 ref 引用值
+- 当希望组件“记住”某些信息，但又不想让这些信息 触发新的渲染 时，可以使用 ref 
+
+```jsx
+//1.引用ref
+import { useRef } from 'react';
+//react在首次渲染时会创建一个对象，并且修改是通过ref.current也不会影响到对象本身的地址
+const ref = useRef(0);
+
+//useRef()会返回对象，ref本质是一个对象
+{ 
+  current: 0 // 向 useRef 传入的值
+}
+
+//访问或修改值
+ref.current
+```
+
+### 注意
+- let无法做到跨渲染保留，只用于本次渲染过程的临时变量<br/>
+- ref用于跨渲染保留以及修改它不需要触发 UI 更新<br/>
+- state用于值变化需要反映到 UI 上
+
+## 使用 ref 操作 DOM
+- 给 标签属性ref 传递定义的ref，该标签的dom就能通过ref.current进行获取
+```jsx
+import { useRef } from 'react';
+
+export default function Form() {
+  //定义组件inputRef
+  const inputRef = useRef(null);
+
+  function handleClick() {
+    inputRef.current.focus();
+  }
+  return (
+    <>
+      <input ref={inputRef} />  //获取到input的dom
+      <button onClick={handleClick}>
+        聚焦输入框
+      </button>
+    </>
+  );
+}
+
+```
+
+
+
+
+vite,ts,react,umi
 
