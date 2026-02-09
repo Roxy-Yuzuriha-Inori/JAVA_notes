@@ -1173,11 +1173,130 @@ export default function Form() {
     </>
   );
 }
+```
+- Hook 只能在组件的顶层被调用，即不受任何条件、循环、嵌套函数影响的那一层。如果Hook 可能不执行，或者执行顺序可能改变，就不是在顶层<br/>
+
+- ref回调 
+```jsx
+import { useRef, useState } from "react";
+
+export default function CatFriends() {
+  const itemsRef = useRef(null);
+  const [catList, setCatList] = useState(setupCatList);
+  //传入map的key即cat对象，获取到map的value即dom元素
+  function scrollToCat(cat) {
+    //获取持久存在的map
+    const map = getMap();
+    //通过map对应关系得到dom元素
+    const node = map.get(cat);
+    node.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  }
+
+  function getMap() {
+    if (!itemsRef.current) {
+      // 首次运行时初始化 Map。
+      itemsRef.current = new Map();
+    }
+    return itemsRef.current;
+  }
+
+  return (
+    <>
+      <nav>
+        <button onClick={() => scrollToCat(catList[0])}>Neo</button>
+        <button onClick={() => scrollToCat(catList[5])}>Millie</button>
+        <button onClick={() => scrollToCat(catList[8])}>Bella</button>
+      </nav>
+      <div>
+        <ul>
+          //为列表中的每一项都绑定 ref
+          {catList.map((cat) => (
+            <li
+              key={cat.id}
+              ref={(node) => {
+                //获取持久性map
+                const map = getMap();
+                //map中存储cat和对应dom的键值对
+                map.set(cat, node);
+                //如果渲染前后dom树前后diff不一样，执行删除map中的键值对，不会让 Map 一直持有旧对象/旧 DOM 引用
+                return () => {
+                  map.delete(cat);
+                };
+              }}
+            >
+              <img src={cat.imageUrl} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </>
+  );
+}
+//初始化catlist
+function setupCatList() {
+  const catCount = 10;
+  const catList = new Array(catCount)
+  for (let i = 0; i < catCount; i++) {
+    let imageUrl = '';
+    if (i < 5) {
+      imageUrl = "https://placecats.com/neo/320/240";
+    } else if (i < 8) {
+      imageUrl = "https://placecats.com/millie/320/240";
+    } else {
+      imageUrl = "https://placecats.com/bella/320/240";
+    }
+    catList[i] = {
+      id: i,
+      imageUrl,
+    };
+  }
+  return catList;
+}
 
 ```
+- 使用命令句柄暴露一部分 API 
+```jsx
+import { useRef, useImperativeHandle } from "react";
+//子组件
+function MyInput({ ref }) {
+  //存子组件dom
+  const realInputRef = useRef(null);
+  //父组件传来的ref只能得到子组件useImperativeHandle中暴露的方法
+  useImperativeHandle(ref, () => ({
+    // 只暴露 focus，没有别的
+    focus() {
+      realInputRef.current.focus();
+    },
+  }));
+  //
+  return <input ref={realInputRef} />;
+};
+//父组件
+export default function Form() {
+  //父组件的子组件dom形参
+  const inputRef = useRef(null);
 
+  function handleClick() {
+    inputRef.current.focus();
+  }
 
-
+  return (
+    <>
+      <MyInput ref={inputRef} />
+      <button onClick={handleClick}>聚焦输入框</button>
+    </>
+  );
+}
+```
+- 因为state是一起更新完再去对真实dom做修改，用 flushSync 可以立即同步更新 state
+```jsx
+flushSync(() => {
+  setTodos([ ...todos, newTodo]);
+});
+```
 
 vite,ts,react,umi
-
