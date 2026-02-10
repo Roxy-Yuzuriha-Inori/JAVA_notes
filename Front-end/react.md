@@ -1292,11 +1292,254 @@ export default function Form() {
   );
 }
 ```
+- 使分开的组件中的搜索域获得焦点 
+```jsx
+import SearchButton from './SearchButton.js';
+import SearchInput from './SearchInput.js';
+import {useRef} from 'react'
+export default function Page() {
+  //定义公共ref
+  const appRef = useRef(null)
+  return (
+    <>
+      <nav>
+        <SearchButton onClick = {()=> appRef.current.focus()}/>
+      </nav>
+      <SearchInput ref={appRef}/>
+    </>
+  );
+}
+
+```
 - 因为state是一起更新完再去对真实dom做修改，用 flushSync 可以立即同步更新 state
 ```jsx
+import { flushSync } from 'react-dom';
 flushSync(() => {
   setTodos([ ...todos, newTodo]);
 });
+//滚动
+//ref.current.lastChild.scrollIntoView()
 ```
 
+## 使用Effect进行同步
+- React 总是在执行下一轮渲染的 Effect 之前清理上一轮渲染的 Effect
+```jsx
+useEffect(() => {
+  // 这里的代码会在每次渲染后运行
+});
+
+useEffect(() => {
+  // 这里的代码只会在组件挂载（首次出现）时运行
+}, []);
+
+useEffect(() => {
+  // 这里的代码不但会在组件挂载时运行，而且当 a 或 b 的值自上次渲染后发生变化后也会运行
+}, [a, b]);
+
+
+```
+- 记得要释放资源，如关闭连接等
+```jsx
+//定时器
+//effect返回函数才执行clean，不能直接返回函数里的执行结果
+useEffect(() => {
+  return clearInterval(intervalId) //错误
+  return () => clearInterval(intervalId); //正确
+});
+
+//异步请求
+import { useState, useEffect } from 'react';
+import { fetchBio } from './api.js';
+export default function Page() {
+  const [person, setPerson] = useState('Alice');
+  const [bio, setBio] = useState(null);
+  useEffect(() => {
+    //ignore标志位
+    let ignore = false;
+    setBio(null);
+    fetchBio(person).then(result => {
+      if (!ignore) {
+        setBio(result);
+      }
+    });
+  //在异步请求来之前就把不要的清理掉，设置ignore为true，这样不会之前的不会执行setBio进行展示
+    return () => {
+      ignore = true;
+    }
+  }, [person]);
+
+  return (
+    <>
+      <select value={person} onChange={e => {
+        setPerson(e.target.value);
+      }}>
+        <option value="Alice">Alice</option>
+        <option value="Bob">Bob</option>
+        <option value="Taylor">Taylor</option>
+      </select>
+      <hr />
+      <p><i>{bio ?? '加载中……'}</i></p>
+    </>
+  );
+}
+
+```
+## 你可能不需要Effect
+- 如果一个值可以基于现有的 props 或 state 计算得出，不要把它作为一个 state，而是在渲染期间直接计算这个值
+```jsx
+//错误
+function Form() {
+  const [firstName, setFirstName] = useState('Taylor');
+  const [lastName, setLastName] = useState('Swift');
+
+  // 🔴 避免：多余的 state 和不必要的 Effect
+  const [fullName, setFullName] = useState('');
+  useEffect(() => {
+    setFullName(firstName + ' ' + lastName);
+  }, [firstName, lastName]);
+
+}
+
+//正确
+function Form() {
+  const [firstName, setFirstName] = useState('Taylor');
+  const [lastName, setLastName] = useState('Swift');
+  // ✅ 非常好：在渲染期间进行计算
+  const fullName = firstName + ' ' + lastName;
+  // ...
+}
+```
+
+- 缓存昂贵的计算
+```jsx
+import { useMemo, useState } from 'react';
+
+function TodoList({ todos, filter }) {
+  const [newTodo, setNewTodo] = useState('');
+  //将getFilteredTodos(todos, filter)复杂的计算结果缓存到visibleTodos
+  const visibleTodos = useMemo(() => {
+    // ✅ 除非 todos 或 filter 发生变化，否则不会重新执行
+    return getFilteredTodos(todos, filter);
+  }, [todos, filter]);
+  // ...
+}
+```
+- 每次应用加载时执行一次，而不是在 每次组件挂载时执行一次
+```jsx
+//法一
+let didInit = false;
+
+function App() {
+  useEffect(() => {
+    if (!didInit) {
+      didInit = true;
+      // ✅ 只在每次应用加载时执行一次
+      loadDataFromLocalStorage();
+      checkAuthToken();
+    }
+  }, []);
+  // ...
+}
+
+//法二
+if (typeof window !== 'undefined') { // 检测我们是否在浏览器环境
+   // ✅ 只在每次应用加载时执行一次
+  checkAuthToken();
+  loadDataFromLocalStorage();
+}
+
+function App() {
+  // ...
+}
+```
+- 订阅外部store：useSyncExternalStore
+https://zh-hans.react.dev/reference/react/useSyncExternalStore
+
+### 例题
+```jsx
+//App.js
+import { useState, useEffect } from 'react';
+import { initialTodos, createTodo, getVisibleTodos } from './todos.js';
+
+export default function TodoList() {
+  const [todos, setTodos] = useState(initialTodos);
+  const [showActive, setShowActive] = useState(false);
+  const [text, setText] = useState('');
+
+  //1.用useEffect去更新肯定不对的，因为它会先做一遍旧数据的渲染再执行effect里面的内容，里面再用新数据去渲染，会多做一遍旧数据的渲染
+  // useEffect(() => {
+  //   setVisibleTodos(getVisibleTodos(todos, showActive));
+  // }, [todos, showActive]);
+
+  //2.问题在于text,当用户输入时，setText会进行渲染，从而导致重复计算visibleTodos，而visibleTodos只依赖于todos, showActive，所以可用Memo进行缓存
+  // const visibleTodos = getVisibleTodos(todos, showActive);
+
+ //3.用Memo进行缓存，当todos, showActive变化进行更新，text变化时导致的重新渲染不会改变visibleTodos，可用之前的缓存值
+ //visibleTodos是可以靠todos, showActive计算出来的结果，当todos, showActive变化都会触发渲染，页面展示的visibleTodos也会重新渲染，所以不用再声明为一个state
+const visibleTodos = useMemo(
+    () => getVisibleTodos(todos, showActive),
+    [todos, showActive]
+  );
+
+
+  function handleAddClick() {
+    setText('');
+    setTodos([...todos, createTodo(text)]);
+  }
+
+  return (
+    <>
+      <label>
+        <input
+          type="checkbox"
+          checked={showActive}
+          onChange={e => setShowActive(e.target.checked)}
+        />
+        只显示未完成的事项
+      </label>
+      <input value={text} onChange={e => setText(e.target.value)} />
+      <button onClick={handleAddClick}>
+        添加
+      </button>
+      <ul>
+        {visibleTodos.map(todo => (
+          <li key={todo.id}>
+            {todo.completed ? <s>{todo.text}</s> : todo.text}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+```
+```jsx
+//todo.js
+let nextId = 0;
+let calls = 0;
+
+export function getVisibleTodos(todos, showActive) {
+  console.log(`getVisibleTodos() 被调用了 ${++calls} 次`);
+  //activeTodos 存 completed为false的
+  const activeTodos = todos.filter(todo => !todo.completed);
+  //true展示activeTodos ； false展示todos
+  const visibleTodos = showActive ? activeTodos : todos;
+  return visibleTodos;
+}
+//初始化数据函数，completed不传默认为false
+export function createTodo(text, completed = false) {
+  return {
+    id: nextId++,
+    text,
+    completed
+  };
+}
+//初始化数据
+export const initialTodos = [
+  createTodo('买苹果', true),
+  createTodo('买橘子', true),
+  createTodo('买胡萝卜'),
+];
+
+```
 vite,ts,react,umi
