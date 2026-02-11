@@ -1455,6 +1455,73 @@ function App() {
 - 订阅外部store：useSyncExternalStore
 https://zh-hans.react.dev/reference/react/useSyncExternalStore
 
+- 建立父子组件并加key实现切换重新渲染代替effect
+```jsx
+import { useState, useEffect } from 'react';
+
+export default function EditContact({ savedContact, onSave }) {
+  const [name, setName] = useState(savedContact.name);
+  const [email, setEmail] = useState(savedContact.email);
+
+  useEffect(() => {
+    setName(savedContact.name);
+    setEmail(savedContact.email);
+  }, [savedContact]);
+
+//将上面改写成两个组件
+export default function EditContact(props) {
+  return (
+    <EditForm
+      {...props}
+      key={props.savedContact.id}
+    />
+  );
+}
+
+function EditForm({ savedContact, onSave }) {
+  const [name, setName] = useState(savedContact.name);
+  const [email, setEmail] = useState(savedContact.email);
+
+//--------------------------------------------------
+  return (
+    <section>
+      <label>
+        姓名：{' '}
+        <input
+          type="text"
+          value={name}
+          onChange={e => setName(e.target.value)}
+        />
+      </label>
+      <label>
+        邮箱：{' '}
+        <input
+          type="email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+        />
+      </label>
+      <button onClick={() => {
+        const updatedData = {
+          id: savedContact.id,
+          name: name,
+          email: email
+        };
+        onSave(updatedData);
+      }}>
+        保存
+      </button>
+      <button onClick={() => {
+        setName(savedContact.name);
+        setEmail(savedContact.email);
+      }}>
+        重置
+      </button>
+    </section>
+  );
+}
+
+```
 ### 例题
 ```jsx
 //App.js
@@ -1542,4 +1609,98 @@ export const initialTodos = [
 ];
 
 ```
+## 响应式 Effect 的生命周期
+- 在组件保持挂载状态的同时，可能还需要 多次开始和停止同步<br/>
+- CharRoom组件
+   - ChatRoom 组件挂载，roomId 设置为 "general"<br/>
+   - ChatRoom 组件更新，roomId 设置为 "travel"<br/>
+   - ChatRoom 组件更新，roomId 设置为 "music"<br/>
+   - ChatRoom 组件卸载 
+- Effect操作
+   - Effect 连接到了 "general" 聊天室<br/>
+   - Effect 断开了与 "general" 聊天室的连接，并连接到了 "travel" 聊天室<br/>
+   - Effect 断开了与 "travel" 聊天室的连接，并连接到了 "music" 聊天室<br/>
+   - Effect 断开了与 "music" 聊天室的连接
+```jsx
+function ChatRoom({ roomId /* "general" */ }) {
+  useEffect(() => {
+    const connection = createConnection(serverUrl, roomId); // 连接到 "general" 聊天室
+    connection.connect();
+    return () => {
+      connection.disconnect(); // 断开与 "general" 聊天室的连接
+    };
+  }, [roomId]);
+}
+```
+
+- 依赖项
+  - 没有变的依赖项不需要添加
+
+## 将事件从 Effect 中分开
+- 事件处理函数：除非有类似点击行为的触发，不然不会执行，属于非响应式<br/>
+- Effect ：基于依赖项是否发生变化，只要发生变化就会执行，属于响应式<br/>
+- 目的：将非响应式代码从Effect中分开<br/>
+- 什么时候用：依赖项的变化对整体effect的功能不产生影响。比如访问页面与添加物品的参数，添加物品的参数完全可以由事件来触发
+```jsx
+import { useEffect, useEffectEvent } from 'react';
+//useEffectEvent非响应式函数，用于在effect中使用
+function ChatRoom({ roomId, theme }) {
+
+//可通过effect调用时传参决定用最新值还是旧值
+  const onConnected = useEffectEvent(() => {
+    showNotification('Connected!', theme);
+  });
+
+  useEffect(() => {
+    const connection = createConnection(serverUrl, roomId);
+    connection.on('connected', () => {
+      //这里可传  先前定义的值
+      onConnected();
+    });
+    connection.connect();
+    return () => connection.disconnect();
+  }, [roomId]); // ✅ 声明所有依赖项
+}
+```
+## 移除 Effect 依赖
+- 用更新函数，移除依赖
+```jsx
+useEffect(() => {
+    console.log('创建定时器');
+    const id = setInterval(() => {
+      console.log('Interval');
+      //setCount(c+1)
+      setCount(c => c + 1);
+    }, 1000);
+    return () => {
+      console.log('清除定时器');
+      clearInterval(id);
+    };
+  }, []);
+```
+- 不要用对象或者函数作为依赖，对象在每次渲染之后都是新的
+```jsx
+//静态对象放effect外面，动态对象放里面，在外面提前从函数中获取值
+import { useState, useEffect } from 'react';
+import { createConnection } from './chat.js';
+
+//参数为对象
+export default function ChatRoom({ roomId, serverUrl }) {
+  useEffect(() => {
+    //Effect里必须创建一个新对象
+    const connection = createConnection({
+      roomId: roomId,
+      serverUrl: serverUrl
+    });
+    connection.connect();
+    return () => connection.disconnect();
+  }, [roomId, serverUrl]);
+
+  return <h1>欢迎来到 {roomId} 房间！</h1>;
+}
+```
+- 传函数的解决方法
+https://zh-hans.react.dev/learn/removing-effect-dependencies#fix-a-reconnecting-chat-again
+
+
 vite,ts,react,umi
