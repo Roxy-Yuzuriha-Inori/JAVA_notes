@@ -1,1 +1,338 @@
-init
+# flux单向数据流
+1. 四个角色：View(视图)，Action(行为对象)，Dispatcher(调度器)，Store(数据中心)<br/>
+2. 单向：View视图的更改只能通过Action，并且由Dispatcher发出Action通过reducer修改Store数据，Store发现数据修改通知View
+
+# React-Redux
+## 快速入门
+```jsx
+//src/store/index.tsx     store配置类
+import {configureStore} from '@reduxjs/toolkit'
+//默认导入counterSlice.reducer，并起别名counterRedecer
+import counterReducer from '/src/store/reducer/countSlice'
+//导出的是一个store，对应的是reducer里面的对象  
+export defualt configureStore({
+    reducer:{
+        counter:counterReducer
+    }
+})
+```
+```jsx
+//src/store/reducer/countSlice   初始状态和reducer函数
+import {createSlice} from '@reduxjs/toolkit'
+
+//用createSlice（对象）新建一个Slice
+export const counterSlice = createSlice({
+    name:'counter'
+    initialState:{
+        value:0
+    },
+    reducers:{
+        increment:state=>{
+            state.value+=1
+        },
+        decrement:state=>{
+            state.value-=1
+        },
+        incrementByAmount:(state,action)=>{
+            state.value += action.payload
+        }
+    }
+})
+//actions creators存在counterSlice.actions，调用actions creator函数如dispatch(decrement())，会返回对应的对象
+//具名导出actions creators函数
+export const {increment,decrement,incrementByAmount}= counterSlice.actions
+
+//默认导出reducer
+export default counterSlice.reducer
+
+//可类似导出选择器供useSlect作为参数使用
+export const selectAllPosts = state => state.posts.posts
+```
+```jsx
+//导入store
+import store from './src/store'
+//导入Provider，处于Provider标签里面的可以用状态
+import {Provider} from 'react-redux'
+
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById('root')
+)
+```
+
+```jsx
+//使用全局状态和action
+import { useSelector, useDispatch } from 'react-redux'
+//导入action creators
+import { decrement, increment } from './counterSlice'
+
+export function Counter(){
+    //获取可变值  counter对应configureStore中reducer中的key
+    const count = useSelector(state=>state.counter.value)
+    //或者dispatch
+    const dispatch = useDispatch()
+}
+```
+## 基础教程
+### 术语
+1. Action
+```jsx
+//一般是带type的对象
+const Action = {
+  type: 'todos/todoAdded',
+  payload: 'Buy milk'
+}
+```
+2. Action Creator
+```jsx
+//返回Action的函数
+const addTodo = text => {
+  return {
+    type: 'todos/todoAdded',
+    payload: text
+  }
+}
+```
+3. Reducer 
+```jsx
+//接受state和action，返回更新后的state
+const initialState = { value: 0 }
+function counterReducer(state = initialState, action) {
+  // 检查 reducer 是否关心这个 action
+  if (action.type === 'counter/increment') {
+    // 如果是，复制 `state`
+    return {
+      ...state,
+      // 使用新值更新 state 副本
+      value: state.value + 1
+    }
+  }
+  // 返回原来的 state 不变
+  return state
+}
+```
+4. Store
+```jsx
+//配置类返回的对象
+import { configureStore } from '@reduxjs/toolkit'
+
+const store = configureStore({ reducer: counterReducer })
+//可以通过getState得到对象，对应的是reducer后面的对象 
+console.log(store.getState())
+// {value: 0}  store.getState().value  得到state值
+
+const store = configureStore({ 
+    reducer: {count:counterReducer} 
+    })
+//则是store.getState().count.value
+//上面用combineReducers等价于
+const store = configureStore({
+    reducer:combineReducers({count:counterReducer})
+})
+
+
+//configureStore是对createStore的现代封装
+const store = createStore(rootReducer)
+
+//createStore要求传递一个rootReducer的函数
+function rootReducer(state = {}, action) {
+  return {
+    users: usersReducer(state.users, action),
+    posts: postsReducer(state.posts, action),
+    comments: commentsReducer(state.comments, action)
+  }
+}
+//用combineReducers的等价写法
+const rootReducer = combineReducers({
+  users: usersReducer,
+  posts: postsReducer,
+  comments: commentsReducer
+})
+
+```
+5. Dispatch
+```jsx
+//dispatch(action)来更新state
+store.dispatch({ type: 'counter/increment' })
+console.log(store.getState())
+
+//一般dispatch(Action Creator函数)来更新state
+const increment = () => {
+  return {
+    type: 'counter/increment'
+  }
+}
+store.dispatch(increment())
+console.log(store.getState())
+
+```
+6. Selector
+```jsx
+//selector选择器，获取store指定片段
+const selectCounterValue = state => state.counter.value
+//选择器里面传state
+const currentValue = selectCounterValue(store.getState())
+//等同于store.getState().value来获取数据，不会触发渲染，组件外使用
+console.log(currentValue)
+
+//selectCount例子
+// counterSlice.js
+export const selectCount = (state) => state.counter.value;
+
+// thunk：根据需要决定是否发请求
+export const fetchIfNeeded = () => (dispatch, getState) => {
+    //组件外没有 useSelector，不能自动读取 Redux
+    //用selector在 thunk（异步逻辑）中读取当前 Redux state
+  const count = selectCount(getState());
+  if (count > 0) {
+    console.log("已有数据，不需要请求");
+    return;
+  }
+
+  dispatch(fetchDataFromApi());
+};
+
+//其他场景：thunk、调试、工具函数
+
+//对比useSelector
+//useSelector里面传选择器来获取数据，并且会触发渲染，组件内使用
+const counter = useSelector(selctCounterValue)
+```
+- useSelector的两个作用
+  - 从Redux store中提取数据 （为什么不能直接修改store,因为确保只有部分组件重新渲染）
+  - 该数据变化会触发重新渲染
+7. Slice
+```jsx
+//reducer逻辑（state的改变）和action的集合（action的名字）
+export const counterSlice = createSlice({
+    name:'counter'
+    initialState:{
+        value:0
+    },
+    //action集合：reducer逻辑
+    reducers:{
+        increment:state=>{
+            state.value+=1
+        },
+        decrement:state=>{
+            state.value-=1
+        },
+    }
+})
+
+//createSlice会自动生成action creator,action type如counter/increment即name+名称，action对象的工作即reducer函数
+
+const newState = counterSlice.reducer(
+  { value: 10 }, //reducer函数的第一个参数state
+  counterSlice.actions.increment() //counterSlice生成的action creator，返回action对象
+)
+console.log(newState)
+// {value: 11}
+```
+
+```jsx
+//
+const postsSlice = createSlice({
+  name: 'posts',
+  initialState,
+  reducers: {
+    //当action参数过多时，原来的改变状态逻辑用reducer
+    postAdded: {
+      reducer(state, action) {
+        state.push(action.payload)
+      },
+      //prepare定义action.payload所需参数，及调用postAdd所需参数
+      prepare(title, content) {
+        return {
+          payload: {
+            id: nanoid(),
+            title,
+            content
+          }
+        }
+      }
+    }
+    // other reducers here
+
+    /*
+    作用：让当前 slice 能响应“来自 slice 外部的 action”，比如配合createAsyncThunk函数使用
+    builder.addCase(actionCreator, reducer)：定义一个 case reducer，它响应 RTK action creator 生成或者普通字符串定义的 action。
+    builder.addMatcher(matcher, reducer)：定义一个 case reducer，它可以响应任何 matcher 函数返回 true 的 action.
+    builder.addDefaultCase(reducer)：定义一个 case reducer，如果没有其他 case reducer 被执行，这个 action 就会运行。    
+    你可以将这些链接在一起，例如builder.addCase().addCase().addMatcher().addDefaultCase()
+    */
+    extraReducers(builder) {
+    builder
+      .addCase(fetchPosts.pending, (state, action) => {
+        state.status = 'loading'
+      })
+      .addCase(fetchPosts.fulfilled, (state, action) => {
+        state.status = 'succeeded'
+        // Add any fetched posts to the array
+        state.posts = state.posts.concat(action.payload)
+      })
+      .addCase(fetchPosts.rejected, (state, action) => {
+        state.status = 'failed'
+        state.error = action.error.message
+      })
+  }
+  }
+})
+```
+### 用Thunk编写异步逻辑
+```jsx
+//例1
+//两个函数，外面函数传递必要参数，里面函数为thunk函数，用于放异步dispatch
+export const increamentAsync = amount =>dispatch =>{
+    setTimeout(
+    ()=>{
+        //执行异步dispatch
+        dispatch(incrementByAmount(amount))
+    }
+    )
+}
+//调用,正常dispatch一个函数
+dispatch(increamentAsync(5))
+
+//例2
+// 外部的 thunk creator 函数 fetchUserById，参数userId
+const fetchUserById = userId => {
+  // 内部的 thunk 函数，两个可选固定形参dispatch, getState
+  return async (dispatch, getState) => {
+    try {
+      // thunk 内发起异步数据请求
+      const user = await userAPI.fetchById(userId)
+      // 但数据响应完成后 dispatch 一个 action
+      dispatch(userLoaded(user))
+    } catch (err) {
+    }
+  }
+}
+//getState可用于获取全局最新状态，等同于store.getState()
+
+//例三
+//createAsyncThunk函数会自动按 Promise 的状态派发三类 action：actiontype前缀+pending/fulfilled/rejected
+//第一个参数，actiontype前缀  第二个参数payload creator（通常是异步函数 async），返回promise
+export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
+  const response = await client.get('/fakeApi/posts')
+  return response.data
+})
+
+// 如果response.data返回的是以下这个对象
+return { list: res.data.list, total: res.data.total }
+
+// 那么slice的extraReducers可以通过action.payload拿到数据
+builder.addCase(fetchA.fulfilled, (state, action) => {
+  // action.payload: { list: Item[]; total: number }
+  state.list = action.payload.list
+  state.total = action.payload.total
+})
+
+
+```
+
+# Redux-saga（中间件）
+
+# Dva（框架）
