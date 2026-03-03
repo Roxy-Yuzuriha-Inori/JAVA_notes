@@ -496,6 +496,150 @@ export const apiSlice = createApi({
 4.<PostsList> 组件自动变灰（isFetching=true），然后重新渲染最新帖子列表
 */
 ```
+1. RTK Query 允许多个组件订阅相同的数据，并且将确保每个唯一的数据集只获取一次。也就是说组件请求数据，RTK Query会先去缓存找有没有对应的数据，没有才会发起请求<br/>
+2. 如果在添加任何新的数据订阅之前计时器到期，RTK Query 将自动从缓存中删除该数据(默认为60秒)。60秒到期以后，缓存数据就会标记为过期状态，下次重新渲染或组件挂载时，RTK Query 发现缓存已过期 便会自动触发新请求获取数据 （实现不刷新浏览器更新数据）<br/>
+3. 刷新浏览器是将缓存数据全部删除
+```jsx
+//打标签可以配合id使用
+//作用：精细指定要刷新的缓存数据，不影响其他的缓存数据
+export const apiSlice = createApi({
+  reducerPath: 'api',
+  baseQuery: fetchBaseQuery({ baseUrl: '/fakeApi' }),
+  tagTypes: ['Post'], // 声明标签类型为Post
+  endpoints: builder => ({
+    // 1. 获取所有帖子
+    getPosts: builder.query({
+      query: () => '/posts',
+      // 提供标签：给整个列表打'Post'标签，同时给每个帖子打{type: 'Post', id: 帖子ID}标签
+      providesTags: (result = [], error, arg) => [
+        'Post', // 列表级标签
+        ...result.map(({ id }) => ({ type: 'Post', id })) // 每个帖子的精准标签
+      ]
+    }),
+    // 2. 获取单个帖子
+    getPost: builder.query({
+      query: postId => `/posts/${postId}`,
+      // 提供标签：只给当前ID的帖子打精准标签（arg就是传入的postId）
+      providesTags: (result, error, arg) => [{ type: 'Post', id: arg }]
+    }),
+    // 3. 添加新帖子
+    addNewPost: builder.mutation({
+      query: initialPost => ({ url: '/posts', method: 'POST', body: initialPost }),
+      // 使标签失效：让列表级的'Post'标签失效 → 重新获取整个帖子列表
+      invalidatesTags: ['Post']
+    }),
+    // 4. 编辑帖子
+    editPost: builder.mutation({
+      query: post => ({ url: `posts/${post.id}`, method: 'PATCH', body: post }),
+      // 使标签失效：只让被编辑帖子的精准标签失效（arg是传入的post对象，取其id）
+      invalidatesTags: (result, error, arg) => [{ type: 'Post', id: arg.id }]
+    })
+  })
+})
+```
+### 用RTK Query代替createAsyncThunk全局状态管理，增强封装网络请求 + 缓存的能力
+```
+1. 定义请求接口
+先在 apiSlice.js 里新增 getUsers 查询接口，和帖子接口写法一致：
+javascript
+运行
+// apiSlice.js
+export const apiSlice = createApi({
+  // ... 其他配置（baseQuery、tagTypes 等）
+  endpoints: builder => ({
+    // 新增获取用户列表的接口，无参数，请求 /users
+    getUsers: builder.query({
+      query: () => '/users'
+    })
+  })
+})
+// 导出 hook（暂时不用，仅保持格式统一）
+export const { useGetUsersQuery } = apiSlice
+2. 手动触发请求（应用初始化时）
+之前获取用户是用 createAsyncThunk 写的 fetchUsers，现在改用 RTK Query 的 initiate() thunk，在应用入口 index.js 手动 dispatch：
+javascript
+运行
+// index.js
+import { apiSlice } from './features/api/apiSlice'
+
+async function main() {
+  await worker.start({ onUnhandledRequest: 'bypass' })
+  // 手动触发 getUsers 请求（替代原来的 fetchUsers thunk）
+  store.dispatch(apiSlice.endpoints.getUsers.initiate())
+  // ... 渲染 App
+}
+main()
+关键注意点
+initiate() 是 RTK Query 为每个接口生成的 thunk，Hooks 内部其实也是调用这个方法；
+手动 dispatch 会创建缓存订阅，如果不需要永久保留数据，必须手动取消订阅（这里因为用户数据全程需要，所以跳过取消）；
+这一步的目的：在 App 渲染前就加载用户数据，和之前用 fetchUsers 手动 dispatch 的效果一致。
+3. 从 RTK Query 缓存中读取用户数据
+之前用户数据存在 state.users（由 createEntityAdapter 管理），现在数据存在 RTK Query 的缓存里，需要重写 selector 从缓存读取：
+javascript
+运行
+// usersSlice.js
+// 1. 创建读取 getUsers 缓存的 selector（无参数，缓存键为 undefined）
+export const selectUsersResult = apiSlice.endpoints.getUsers.select()
+
+// 2. 重写 selectAllUsers：从缓存结果中取数据，兜底空数组
+export const selectAllUsers = createSelector(
+  selectUsersResult,
+  usersResult => usersResult?.data ?? [] // 缓存数据在 result.data 里
+)
+
+// 3. 重写 selectUserById：从缓存的用户数组中找指定 ID
+export const selectUserById = createSelector(
+  selectAllUsers,
+  (state, userId) => userId,
+  (users, userId) => users.find(user => user.id === userId)
+)
+核心：endpoint.select(缓存键) 生成的 selector 能精准定位 RTK Query 缓存里的对应数据；
+组件无需修改（因为组件只导入 selectAllUsers/selectUserById），实现 “无感迁移”。
+三、第二部分：拆分请求接口（injectEndpoints）
+1. 问题背景
+如果所有接口都写在 apiSlice.js，文件会越来越大；大型应用还需要按需加载接口（代码拆分）。
+2. 解决方案：injectEndpoints
+把 getUsers 接口从 apiSlice.js 移到 usersSlice.js，通过 injectEndpoints 注入到主 API slice 中：
+javascript
+运行
+// usersSlice.js
+import { apiSlice } from '../api/apiSlice'
+
+// 注入 getUsers 接口到主 apiSlice
+export const extendedApiSlice = apiSlice.injectEndpoints({
+  endpoints: builder => ({
+    getUsers: builder.query({
+      query: () => '/users'
+    })
+  })
+})
+
+// 导出 hook 和 selector
+export const { useGetUsersQuery } = extendedApiSlice
+export const selectUsersResult = extendedApiSlice.endpoints.getUsers.select()
+3. 同步修改请求触发代码
+因为 getUsers 接口现在在 extendedApiSlice 里，入口文件要更新 dispatch 的对象：
+javascript
+运行
+// index.js
+// 替换导入源
+import { extendedApiSlice } from './features/users/usersSlice'
+
+// 触发注入后的接口
+store.dispatch(extendedApiSlice.endpoints.getUsers.initiate())
+关键特性
+injectEndpoints 会修改原始的 apiSlice，新增接口定义，主 API slice 的 middleware 和缓存 reducer 无需改动；
+支持代码拆分：可以在组件懒加载时再注入接口，减少初始打包体积；
+TypeScript 友好：extendedApiSlice 会包含新接口的类型定义，避免类型丢失。
+总结
+这段内容的核心知识点：
+RTK Query 核心 API 用法：脱离 React Hooks，用 endpoint.initiate() 手动触发请求，用 endpoint.select() 读取缓存；
+缓存读取逻辑：RTK Query 的缓存数据通过 select() 生成的 selector 读取，格式为 result?.data；
+接口拆分方案：用 injectEndpoints 将接口分散到功能文件中，保持主 API slice 简洁，支持代码拆分。
+简单来说：
+手动使用 RTK Query = 定义接口 + 手动 dispatch initiate thunk + 自定义 selector 读缓存；
+接口拆分 = 用 injectEndpoints 把接口从主文件移到功能文件，不影响整体缓存和中间件。
+```
 ## Redux深入浅出
 https://cn.redux.js.org/tutorials/fundamentals/part-1-overview
 # Redux-saga（中间件）
