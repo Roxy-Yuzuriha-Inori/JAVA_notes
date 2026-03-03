@@ -458,7 +458,43 @@ reset()：手动重置该 Hook 的本地状态（把 isSuccess/isError/data/erro
 ```
 ```jsx
 //刷新缓存数据
+//1.手动刷新
+//状态函数refetch，放在button上实现点击手动刷新
+<button onClick={refetch}>Refetch Posts</button>
+//2.缓存失效自动刷新
+export const apiSlice = createApi({
+  reducerPath: 'api',
+  baseQuery: fetchBaseQuery({ baseUrl: '/fakeApi' }),
+  tagTypes: ['Post'],   // ① 声明可能会用到的标签类型
 
+  endpoints: builder => ({
+    getPosts: builder.query({
+      query: () => '/posts',
+      providesTags: ['Post'],  // ② 声明这个查询返回的数据属于哪个标签
+    }),
+
+    getPost: builder.query({
+      query: postId => `/posts/${postId}`
+      // 可不写 providesTags，默认不参与标签系统
+    }),
+
+    addNewPost: builder.mutation({
+      query: initialPost => ({
+        url: '/posts',
+        method: 'POST',
+        body: initialPost,
+      }),
+      invalidatesTags: ['Post'],  // ③ 声明这个 Mutation 请求会让哪些标签“失效”
+    }),
+  }),
+})
+/*
+整体流程：
+1.getPosts 查询 → providesTags: ['Post'] 返回的数据都标上post标签
+2.当用户点击“Save Post”触发addNewPost Mutation → invalidatesTags: ['Post'] 使标签失效
+3.RTK Query 发现Post失效，让有Post标签的请求重新执行，RTK Query 自动执行：getPosts.refetch()
+4.<PostsList> 组件自动变灰（isFetching=true），然后重新渲染最新帖子列表
+*/
 ```
 ## Redux深入浅出
 https://cn.redux.js.org/tutorials/fundamentals/part-1-overview
