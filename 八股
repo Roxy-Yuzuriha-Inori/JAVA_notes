@@ -76,6 +76,7 @@ export function Counter(){
 }
 ```
 ## 基础教程
+https://cn.redux.js.org/tutorials/essentials/part-1-overview-concepts
 ### 术语
 1. Action
 ```jsx
@@ -296,7 +297,7 @@ export const increamentAsync = amount =>dispatch =>{
 //调用,正常dispatch一个函数
 dispatch(increamentAsync(5))
 
-//例2
+//例2 手写thunk，相比createAsyncThunk要自己写action
 // 外部的 thunk creator 函数 fetchUserById，参数userId
 const fetchUserById = userId => {
   // 内部的 thunk 函数，两个可选固定形参dispatch, getState
@@ -312,7 +313,7 @@ const fetchUserById = userId => {
 }
 //getState可用于获取全局最新状态，等同于store.getState()
 
-//例三
+//例3 
 //createAsyncThunk函数会自动按 Promise 的状态派发三类 action：actiontype前缀+pending/fulfilled/rejected
 //第一个参数，actiontype前缀  第二个参数payload creator（通常是异步函数 async），返回promise
 export const fetchPosts = createAsyncThunk('posts/fetchPosts', async () => {
@@ -330,9 +331,138 @@ builder.addCase(fetchA.fulfilled, (state, action) => {
   state.total = action.payload.total
 })
 
+```
+```jsx
+//createAsyncThunk第二个参数payload creator函数详解
+async (arg, thunkAPI) => { /* ... */ }
+export const fetchNotifications = createAsyncThunk(
+  'notifications/fetchNotifications',
+  //可传两个参数
+  async (arg, thunkAPI) => { /* ... */ }
+)
+//1. arg
+//是调用dispatch(fetchNotifications(这里)) 传入的唯一参数。
+//例如：dispatch(fetchNotifications({ limit: 20 }))，那 arg 就是 { limit: 20 }。
+
+//2. thunkAPI
+//是个对象，存放一些函数工具
+//例如：async (arg, {dispatch,getState}) => { /* 可使用dispatch,getState */ }
+//详情https://redux-toolkit.js.org/api/createAsyncThunk
+```
+### RTK Query
+```jsx
+//创建API Slice
+// 从特定于 React 的入口点导入 RTK Query 方法
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+
+// 定义我们的单个 API Slice 对象
+export const apiSlice = createApi({
+//RTK Query 会产生一个 reducer，这个 reducer 会放在 Redux store 里
+  reducerPath: 'api',  //在state.api中
+  // 配置所有 API 请求的默认前缀，使用 fetch 来发请求
+  baseQuery: fetchBaseQuery({ baseUrl: '/fakeApi' }),
+  // 所有 API 请求接口的集合
+  endpoints: builder => ({
+    //builder.query() 表示 GET 类型
+    getPosts: builder.query({
+      // 表示 GET /fakeApi/posts
+      query: () => '/posts'  //可在()传递参数，在调用useGetPostsQuery也需传递对应参数
+    })
+    //builder.mutation() 表示 POST/PUT/DELETE
+    addPost: builder.mutation({
+      //表示 POST /fakeApi/posts
+      query: post => ({
+       url: '/posts',
+       method: 'POST',
+        body: post
+  })
+})
+  })
+})
+
+// RTK Query 会根据 endpoint 的名字自动生成 React hooks
+//例如 名字：getPosts  类型：query => 生成：useGetPostsQuery
+export const { useGetPostsQuery } = apiSlice
+export const { useAddPostMutation } = apiSlice
+
 
 ```
+```jsx
+//配置apiSlice
+import { apiSlice } from '../features/api/apiSlice'
+//把 API Slice 的缓存 reducer 挂到 state
+export default configureStore({
+  reducer: {
+    //用“计算属性名”把 API 缓存 reducer 挂到正确的键
+    [apiSlice.reducerPath]: apiSlice.reducer
+  },
+  middleware: getDefaultMiddleware =>
+    // 先保留 RTK 的默认中间件（含 thunk、序列化/不可变检查等），
+    // 再在末尾拼上 RTK Query 的 middleware
+    getDefaultMiddleware().concat(apiSlice.middleware)
+})
+```
+```jsx
+//useAddPostMutation的调用
+import { useAddPostMutation } from '../api/apiSlice'
+import { selectAllUsers } from '../users/usersSlice'
 
+export const AddPostForm = () => {
+  const [title, setTitle] = useState('')
+
+//useAddPostMutation函数返回 触发函数 + 状态对象
+  const [addPost, { isLoading }] = useAddNewPostMutation()
+  const users = useSelector(selectAllUsers)
+
+  const onTitleChanged = e => setTitle(e.target.value)
+
+  const canSave = [userId].every(Boolean) && !isLoading
+
+  const onSavePostClicked = async () => {
+    if (canSave) {
+      try {
+        //用触发函数addPost触发异步请求，并用 `.unwrap()` 将结果转成“普通 Promise”
+        await addPost({ user: userId }).unwrap()
+        setTitle('')
+      } catch (err) {
+        console.error('Failed to save the post: ', err)
+      }
+    }
+  }
+}
+//状态对象-RT RTK Query自带
+/*
+QUERY
+isUninitialized：还没发起过请求（比如 skip: true 或用 skipToken 跳过）
+isLoading：首次获取数据中，且当前没有可用缓存
+isFetching：任意一次获取中（包括后续的 refetch、轮询、焦点回归自动刷新等）
+isSuccess：最近一次请求成功
+isError：最近一次请求失败
+data：最新成功的数据（用于渲染）
+currentData：本次请求返回的数据“候选值”（请求未完成时仍为旧值，请求成功后变成新值；用于平滑过渡）
+error：错误对象（含 status、data 等）
+refetch()：手动重新获取（强制刷新）
+fulfilledTimeStamp：上一次成功时间（可用于“过期时间策略”）
+
+Mutation 
+isUninitialized：还没触发过该 mutation
+isLoading：正在提交中
+isSuccess：最近一次提交成功
+isError：最近一次提交失败
+data：最近一次成功返回的数据
+error：最近一次失败的错误对象
+originalArgs：最近一次触发时传入的参数（用于对照或展示）
+reset()：手动重置该 Hook 的本地状态（把 isSuccess/isError/data/error 清零）
+触发函数返回的 Promise 上的 .unwrap()：把结果转为“标准 Promise”，方便 try/catch
+*/
+```
+```jsx
+//刷新缓存数据
+
+```
+## Redux深入浅出
+https://cn.redux.js.org/tutorials/fundamentals/part-1-overview
 # Redux-saga（中间件）
-
+https://redux-saga-in-chinese.js.org/
 # Dva（框架）
+https://dvajs.xiniushu.com/guide/#%E7%89%B9%E6%80%A7
