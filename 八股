@@ -538,12 +538,9 @@ export const apiSlice = createApi({
 })
 ```
 ### 用RTK Query代替createAsyncThunk全局状态管理，增强封装网络请求 + 缓存的能力
-```
-1. 定义请求接口
-先在 apiSlice.js 里新增 getUsers 查询接口，和帖子接口写法一致：
-javascript
-运行
+```jsx
 // apiSlice.js
+//1.在 apiSlice.js 里新增 getUsers 查询接口，和帖子接口写法一致
 export const apiSlice = createApi({
   // ... 其他配置（baseQuery、tagTypes 等）
   endpoints: builder => ({
@@ -555,57 +552,63 @@ export const apiSlice = createApi({
 })
 // 导出 hook（暂时不用，仅保持格式统一）
 export const { useGetUsersQuery } = apiSlice
-2. 手动触发请求（应用初始化时）
-之前获取用户是用 createAsyncThunk 写的 fetchUsers，现在改用 RTK Query 的 initiate() thunk，在应用入口 index.js 手动 dispatch：
-javascript
-运行
+
+//2. 手动触发请求（应用初始化时）
+//之前获取用户是用 createAsyncThunk 写的 fetchUsers异步函数，现在改用 RTK Query 的 initiate() thunk，在应用入口 index.js 手动 dispatch (initiate出来的函数)
 // index.js
 import { apiSlice } from './features/api/apiSlice'
 
 async function main() {
+  // 启动 mock API server
   await worker.start({ onUnhandledRequest: 'bypass' })
-  // 手动触发 getUsers 请求（替代原来的 fetchUsers thunk）
+
   store.dispatch(apiSlice.endpoints.getUsers.initiate())
-  // ... 渲染 App
+
+  ReactDOM.render(
+    <React.StrictMode>
+      <Provider store={store}>
+        <App />
+      </Provider>
+    </React.StrictMode>,
+    document.getElementById('root')
+  )
 }
 main()
-关键注意点
-initiate() 是 RTK Query 为每个接口生成的 thunk，Hooks 内部其实也是调用这个方法；
-手动 dispatch 会创建缓存订阅，如果不需要永久保留数据，必须手动取消订阅（这里因为用户数据全程需要，所以跳过取消）；
-这一步的目的：在 App 渲染前就加载用户数据，和之前用 fetchUsers 手动 dispatch 的效果一致。
-3. 从 RTK Query 缓存中读取用户数据
-之前用户数据存在 state.users（由 createEntityAdapter 管理），现在数据存在 RTK Query 的缓存里，需要重写 selector 从缓存读取：
-javascript
-运行
+
+//apiSlice.endpoints里的名称.initiate() 是 RTK Query 为每个接口生成的 thunk，Hooks 内部其实也是调用这个方法；会永久保留缓存
+
+//3. 从 RTK Query 缓存中读取用户数据
 // usersSlice.js
-// 1. 创建读取 getUsers 缓存的 selector（无参数，缓存键为 undefined）
+// 1. 创建读取 getUsers 缓存的 selector（无参数，缓存键为 undefined）（有参数对应slice里的query()）
 export const selectUsersResult = apiSlice.endpoints.getUsers.select()
 
 // 2. 重写 selectAllUsers：从缓存结果中取数据，兜底空数组
 export const selectAllUsers = createSelector(
   selectUsersResult,
+  //selectUsersResult用于从 RTK Query 的缓存里读取 getUsers 这条接口的查询结果，返回的结果usersResult
   usersResult => usersResult?.data ?? [] // 缓存数据在 result.data 里
 )
 
 // 3. 重写 selectUserById：从缓存的用户数组中找指定 ID
 export const selectUserById = createSelector(
+  //除了最后一个全是选择器
   selectAllUsers,
   (state, userId) => userId,
   (users, userId) => users.find(user => user.id === userId)
 )
-核心：endpoint.select(缓存键) 生成的 selector 能精准定位 RTK Query 缓存里的对应数据；
-组件无需修改（因为组件只导入 selectAllUsers/selectUserById），实现 “无感迁移”。
-三、第二部分：拆分请求接口（injectEndpoints）
+//endpoint.select(缓存键) 生成的 selector 能精准定位 RTK Query 缓存里的对应数据；
+```
+```jsx
+/*
 1. 问题背景
 如果所有接口都写在 apiSlice.js，文件会越来越大；大型应用还需要按需加载接口（代码拆分）。
 2. 解决方案：injectEndpoints
 把 getUsers 接口从 apiSlice.js 移到 usersSlice.js，通过 injectEndpoints 注入到主 API slice 中：
-javascript
-运行
+*/
 // usersSlice.js
 import { apiSlice } from '../api/apiSlice'
 
-// 注入 getUsers 接口到主 apiSlice
+// 拆分出来的接口注入到主 apiSlice
 export const extendedApiSlice = apiSlice.injectEndpoints({
   endpoints: builder => ({
     getUsers: builder.query({
@@ -617,28 +620,31 @@ export const extendedApiSlice = apiSlice.injectEndpoints({
 // 导出 hook 和 selector
 export const { useGetUsersQuery } = extendedApiSlice
 export const selectUsersResult = extendedApiSlice.endpoints.getUsers.select()
-3. 同步修改请求触发代码
-因为 getUsers 接口现在在 extendedApiSlice 里，入口文件要更新 dispatch 的对象：
-javascript
-运行
-// index.js
-// 替换导入源
-import { extendedApiSlice } from './features/users/usersSlice'
 
-// 触发注入后的接口
+
+// index.js
+  // 忽略部分依赖
+//import { apiSlice } from './features/api/apiSlice'
+  import { extendedApiSlice } from './features/users/usersSlice'
+
+  async function main() {
+    // 启动 mock API server
+    await worker.start({ onUnhandledRequest: 'bypass' })
+
+
+//store.dispatch(apiSlice.endpoints.getUsers.initiate())
 store.dispatch(extendedApiSlice.endpoints.getUsers.initiate())
-关键特性
-injectEndpoints 会修改原始的 apiSlice，新增接口定义，主 API slice 的 middleware 和缓存 reducer 无需改动；
-支持代码拆分：可以在组件懒加载时再注入接口，减少初始打包体积；
-TypeScript 友好：extendedApiSlice 会包含新接口的类型定义，避免类型丢失。
-总结
-这段内容的核心知识点：
-RTK Query 核心 API 用法：脱离 React Hooks，用 endpoint.initiate() 手动触发请求，用 endpoint.select() 读取缓存；
-缓存读取逻辑：RTK Query 的缓存数据通过 select() 生成的 selector 读取，格式为 result?.data；
-接口拆分方案：用 injectEndpoints 将接口分散到功能文件中，保持主 API slice 简洁，支持代码拆分。
-简单来说：
-手动使用 RTK Query = 定义接口 + 手动 dispatch initiate thunk + 自定义 selector 读缓存；
-接口拆分 = 用 injectEndpoints 把接口从主文件移到功能文件，不影响整体缓存和中间件。
+    ReactDOM.render(
+      <React.StrictMode>
+        <Provider store={store}>
+          <App />
+        </Provider>
+      </React.StrictMode>,
+      document.getElementById('root')
+    )
+  }
+  main()
+
 ```
 ## Redux深入浅出
 https://cn.redux.js.org/tutorials/fundamentals/part-1-overview
