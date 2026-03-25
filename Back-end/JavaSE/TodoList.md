@@ -8,7 +8,7 @@
 - POST ：新增
 - PUT ：  修改
 - DELETE ：删除
-- # Java基础
+# Java基础
 ## 1.Java 中的序列化和反序列化是什么？
 1. 序列化（what）：将Java对象转成二进制字节流
 2. where：程序执行时（类加载之后）
@@ -482,7 +482,273 @@ System.out.println(a.equals(c)); // true，内容相同
 4. 在运行时生成代理类
 
 ## 23.Java 中的注解原理是什么？
-1. 本质是接口
+本质是个标记，是特殊的接口
+```java
+//三个阶段
+@Retention(RetentionPolicy.SOURCE)  // 只在源码中，编译期处理，用注解处理器APT  Lombok
+@Retention(RetentionPolicy.CLASS)   // 进 .class 文件但不可反射访问
+@Retention(RetentionPolicy.RUNTIME) // 运行期用反射访问 ✅ Spring 常用
+```
+## 24.你使用过 Java 的反射机制吗？如何应用反射？
+运行期发生，每个类都有一个Class对象，可以通过这个对象获取该类的实例对象，属性方法。
+### 获取Class对象
+1. Class.forName("全类名")
+```java
+//多适用于配置文件，读取全路径
+String classsAllPath = "com.edu.Car";
+Class<?> cls1 = Class.forName(classAllPath);
+```
+2. 类名.class
+```java
+//多用于参数传递，比如通过反射得到对应构造器对象
+Class cls2 = Car.class;
+```
+3. 对象.getClass()
+```java
+//已知某个类的对象实例，通过创建好的类，获取Class对象
+Car car = new Car();
+Class cls3 = car.getClass();
+```
+4. 通过类加载器【四种】来获取类的Class对象
+```java
+//获取类加载器car
+ClassLoader classLoader = car.getClass().getClassLoader();
+//类加载器得到Class对象
+Class cls4 = clasLoader.loadClass(classAllPath);
+```
+5. 基本数据获取Class对象
+```java
+//、基本数据(int, char, boolean, float, double, byte, long, short)按如下方式得到Class类对象
+Class<Integer> integerClass = int.class;
+Class<Character> characterClass = char.class;
+Class<Boolean> booleanClass = boolean.class;
+System.out.println(integerClass);//int
+
+//6.基本数据类型对应的包装类,可以通过.TYPE 得到Class类对象
+Class<Integer> type1 = Integer.TYPE;
+Class<Character> type2 = Character.TYPE;
+System.out.println(type1);
+```
+### 有Class对象的类
+1. 外部类,成员内部类,静态内部类,局部内部类,匿名内部类
+2. interface: 接口
+3. 数组
+4. enum: 枚举
+5. annotation: 注解
+6. 基本数据类型
+7. void
+
+### Class对象方法
+getName: 获取全类名
+getSimpleName: 获取简单类名
+getFields: 获取所有public修饰的属性,包含本类以及父类的
+getDeclaredFields: 获取本类中所有属性
+getMethods: 获取所有public修饰的方法,包含本类以及父类的
+getDeclaredMethods: 获取本类中所有方法
+getConstructors: 获取所有public修饰的构造器,包含本类
+getDeclaredConstructors: 获取本类中所有构造器
+getPackage: 以Package形式返回包信息
+getSuperClass: 以Class形式返回父类信息
+getInterfaces: 以Class[]形式返回接口信息
+getAnnotations: 以Annotation[] 形式返回注解信息
+### Field方法
+getModifiers: 以int形式返回修饰符
+[说明: 默认修饰符是0, public 是1, private 是2, protected 是4, static 是8, final 是16], public(1) + static (8)
+getType: 以Class形式返回类型
+getName: 返回属性名
+```java
+     // 获取Student类的Class对象
+        Class<Student> clazz = Student.class;
+        
+        // 获取所有字段
+        Field[] fields = clazz.getDeclaredFields();
+        
+        System.out.println("=== Field类方法示例 ===\n");
+        
+        for (Field field : fields) {
+            System.out.println("字段名: " + field.getName());
+            System.out.println("字段类型: " + field.getType());
+            System.out.println("修饰符值: " + field.getModifiers());
+            System.out.println("修饰符解析: " + getModifierString(field.getModifiers()));
+            System.out.println("---");
+        }
+  ```
+### setAccessible
+作用：启动和禁用访问安全检查的开关
+参数为true：取消访问检查，提高反射效率
+参数为false：执行访问检查，保持安全性
+```java
+import java.lang.reflect.Field;
+
+public class PrivateFieldDemo {
+    public static void main(String[] args) throws Exception {
+        User user = new User(1, "李四");
+        
+        // 获取私有字段
+        Field nameField = User.class.getDeclaredField("name");
+        
+        // 设置可访问性
+        nameField.setAccessible(true);
+        
+        // 读取私有字段值
+        String name = (String) nameField.get(user);
+        System.out.println("私有字段name的值: " + name);
+        
+        // 修改私有字段值
+        nameField.set(user, "王五");
+        System.out.println("修改后的用户: " + user);
+    }
+}
+```
+## 25.什么是 Java 中的不可变类？
+对象一旦创建，状态不可改变，如String,Integer,Long等包装类<br/>
+1. 类声明为final
+2. 所有字段为private final,只在构造阶段赋值一次
+3. 通过构造函数初始化所有字段
+4. 没有setter
+5. 如果字段是可变对象，getter必须返回副本，不可暴露原对象<br/>
+
+优势：线程安全，适合做缓存key
+```java
+public final class ImmutablePerson {
+    private final String name;
+    private final List<String> hobbies;
+    
+    public ImmutablePerson(String name, List<String> hobbies) {
+        this.name = name;
+        // 防御性拷贝，不直接引用外部传入的可变对象
+        this.hobbies = new ArrayList<>(hobbies);
+    }
+    
+    public String getName() {
+        return name; // String 本身不可变，直接返回
+    }
+    
+    public List<String> getHobbies() {
+        // 返回副本，保护内部状态
+        return new ArrayList<>(hobbies);
+    }
+}
+```
+## 26. 什么是 Java 的 SPI（Service Provider Interface）机制？
+1. 调用方提供统一的接口，让第三方去实现
+2. Java SPI 是一种服务发现机制，通过在 META-INF/services/接口全名 中配置实现类，使得 ServiceLoader 在运行时动态加载接口的实现，实现模块间解耦。它广泛应用于 JDBC、日志框架和 Spring Boot 自动装配中。SPI 的原理依赖于配置文件 + 类加载 + 反射。缺点是无法按需加载、性能一般，因此很多框架在 SPI 基础上做了增强。
+
+## 27.Java 泛型的作用是什么？
+1. 编译期提前检查类型匹配
+2. 消除强转
+3. 代码复用
+```java
+// 没泛型的时代
+List list = new ArrayList();
+list.add("hello");
+String s = (String) list.get(0);  // 必须强转，转错了运行时才知道
+
+// 有泛型之后
+List<String> list = new ArrayList<>();
+list.add("hello");
+String s = list.get(0);  // 不用强转，编译器帮你搞定
+list.add(123);  // 编译直接报错，塞不进去
+
+//泛型方法
+public static <T> T getFirst(List<T> list) {
+    return list.isEmpty() ? null : list.get(0);
+}
+
+// 调用时编译器自动推断类型
+String first = getFirst(Arrays.asList("a", "b", "c"));
+```
+## 28.泛型擦除
+泛型只存在编译期，运行期会消失<br/>
+1. 运行期间new数组不知道类型，数组不能加泛型
+2. 泛型无法instance of
+3. 通过泛型可以在运行期间获取泛型的成员变量的泛型类型
+
+## 29.什么是 Java 泛型的上下界限定符？
+1. 上限定符 ? extend T 只能是T或T的子类
+2. 下限定符 ? super T 只能是T或T的父类
+```java
+// 上界：只读不写
+public void process(List<? extends Number> list) {
+    Number num = list.get(0);  // 读取安全，返回 Number 或其子类
+    // list.add(1);            // 编译错误，不能往里加东西
+}
+
+// 下界：只写不读
+public void addToList(List<? super Integer> list) {
+    list.add(1);               // 写入安全，Integer 肯定能放进去
+    // Integer v = list.get(0); // 编译错误，读出来只能当 Object
+}
+```
+PECS<br/>
+1. 从集合拿东西来写，集合是生产者，用extends
+2. 从集合塞东西，集合是消费者，用super
+
+## 30.Java 中的深拷贝和浅拷贝有什么区别？
+1. 浅拷贝拷贝的是引用地址，里面引用类型的值共享一个
+2. 深拷贝是完全拷贝出一个新的，两者完全独立
+```java
+//浅拷贝
+class Person implements Cloneable {
+    String name;
+    int age;
+    Address address;  // 引用类型
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();  // 浅拷贝，address 还是指向同一个对象
+    }
+}
+
+//深拷贝
+//1.手动递归
+@Override
+protected Object clone() throws CloneNotSupportedException {
+    Person cloned = (Person) super.clone();      // 先浅拷贝整体
+    cloned.address = (Address) address.clone();  // 递归克隆内部对象
+    return cloned;
+}
+//2.序列化反序列化
+//JSON序列化
+```
+
+## 31.什么是 Java 的 BigDecimal？
+1. 不可变类
+2. 解决浮点数不精确的问题
+3. 可用long存储最小单位再做转换
+4. 用整数和小数点位置进行存储
+```java
+//1.创建BigDecimal
+// 错误写法，会引入精度问题
+BigDecimal bad = new BigDecimal(0.1);
+System.out.println(bad);  // 输出 0.1000000000000000055511151231257827021181583404541015625
+
+// 正确写法一：用字符串构造
+BigDecimal good1 = new BigDecimal("0.1");
+System.out.println(good1);  // 输出 0.1
+
+// 正确写法二：用 valueOf
+BigDecimal good2 = BigDecimal.valueOf(0.1);
+System.out.println(good2);  // 输出 0.1
+
+//2.除法指定精度和舍入模式
+BigDecimal a = new BigDecimal("1");
+BigDecimal b = new BigDecimal("3");
+// 错误写法，会抛异常
+// BigDecimal c = a.divide(b);  // ArithmeticException: Non-terminating decimal expansion
+
+// 正确写法，指定保留 4 位小数，四舍五入
+BigDecimal c = a.divide(b, 4, RoundingMode.HALF_UP);
+System.out.println(c);  // 输出 0.3333
+
+//3.比较用compareTo而不是equals
+BigDecimal a = new BigDecimal("1.0");
+BigDecimal b = new BigDecimal("1.00");
+System.out.println(a.equals(b));     // false，精度不同
+System.out.println(a.compareTo(b));  // 0，值相等
+```
+## 32.如何在 Java 中调用外部可执行程序或系统命令？
+
 
 # JVM基础
 ## 编译，编译型与解释型语言
