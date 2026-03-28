@@ -1700,7 +1700,110 @@ export default function ChatRoom({ roomId, serverUrl }) {
 }
 ```
 - 传函数的解决方法
-https://zh-hans.react.dev/learn/removing-effect-dependencies#fix-a-reconnecting-chat-again
+```jsx
+//非响应式函数放在外面的effectEvent里.响应式函数传递参数，在Effect里编写该函数
+import { useState, useEffect } from 'react';
+import { useEffectEvent } from 'react';
+import {
+  createEncryptedConnection,
+  createUnencryptedConnection,
+} from './chat.js';
 
+export default function ChatRoom({ roomId, isEncrypted, onMessage }) {
+  //onMessage是非响应式函数，里面参数为dark,不希望dark变化引起effect中重新连接的执行，所以用useEffectEvent包裹作为非响应式函数
+  const onReceiveMessage = useEffectEvent(onMessage);
+
+  useEffect(() => {
+    //createConnection是响应式函数，每次渲染要重新执行
+    function createConnection() {
+      const options = {
+        serverUrl: 'https://localhost:1234',
+        roomId: roomId
+      };
+      if (isEncrypted) {
+        return createEncryptedConnection(options);
+      } else {
+        return createUnencryptedConnection(options);
+      }
+    }
+
+    const connection = createConnection();
+    connection.on('message', (msg) => onReceiveMessage(msg));
+    connection.connect();
+    return () => connection.disconnect();
+  }, [roomId, isEncrypted]);
+
+  return <h1>欢迎来到 {roomId} 房间！</h1>;
+}
+
+```
+## 使用自定义 Hook 复用逻辑
+- 可将公共逻辑放入use开头的函数自定义hook
+```jsx
+function useOnlineStatus() {
+  //state独立于函数，只作为功能逻辑共享，不共享状态
+  const [isOnline, setIsOnline] = useState(true);
+  useEffect(() => {
+    function handleOnline() {
+      setIsOnline(true);
+    }
+    function handleOffline() {
+      setIsOnline(false);
+    }
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+  return isOnline;
+}
+```
+- 自定义hook中可将标签属性值做成一个对象
+```jsx
+//useFormInput.js
+import { useState } from 'react';
+
+export function useFormInput(initialValue) {
+  const [value, setValue] = useState(initialValue);
+  //每当输入框的值改变时，触发onChange事件,执行handleChange函数中的setValue，导致重新渲染，自定义hook也会重新渲染，接收最新的参数（接受的参数可包含事件）
+  function handleChange(e) {
+    setValue(e.target.value);
+  }
+
+  const inputProps = {
+    value: value,
+    onChange: handleChange
+  };
+
+  return inputProps;
+}
+
+//App.js
+import { useFormInput } from './useFormInput.js';
+
+export default function Form() {
+  //获取对象
+  const firstNameProps = useFormInput('Mary');
+  const lastNameProps = useFormInput('Poppins');
+
+  return (
+    <>
+      <label>
+        First name:
+        //解构对象，拿到value和onChange属性
+        <input {...firstNameProps} />
+      </label>
+      <label>
+        Last name:
+        <input {...lastNameProps} />
+      </label>
+      <p><b>Good morning, {firstNameProps.value} {lastNameProps.value}.</b></p>
+    </>
+  );
+}
+
+```
 
 vite,ts,react,umi
