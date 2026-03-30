@@ -880,6 +880,9 @@ opt.or(() -> Optional.of("fallback"));
 // stream：转成 Stream，空的就是空流
 opt.stream().forEach(System.out::println);
 ```
+## Java 的 I/O 流是什么？
+![I/O 流](5_IO流.md)<br/>
+![I/O 流的体系](./assets/IO流.png)
 
 
 # JVM基础
