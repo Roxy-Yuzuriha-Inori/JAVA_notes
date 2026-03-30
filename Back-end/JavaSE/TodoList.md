@@ -748,6 +748,113 @@ System.out.println(a.equals(b));     // false，精度不同
 System.out.println(a.compareTo(b));  // 0，值相等
 ```
 ## 32.如何在 Java 中调用外部可执行程序或系统命令？
+Java 可以通过 Runtime.exec() 或 ProcessBuilder 调用外部命令，其中 ProcessBuilder 是推荐方式。
+通过 ProcessBuilder.start() 启动进程，可读取 InputStream 和 ErrorStream 获取输出，并通过 waitFor() 获取执行状态
+
+## 33.如果一个线程在 Java 中被两次调用 start() 方法，会发生什么？
+会报illegalThreadStateException.
+### 多线程基础
+1. 多线程基础.md
+2. execute 没有返回值，只能提交 Runnable
+3. submit 有返回值 Future，可以提交 Runnable 和 Callable
+4. execute 的异常会直接抛出
+5. submit 的异常会被封装在 Future 中，调用 get() 才能拿到
+
+## 34. 栈和队列在 Java 中的区别是什么？
+1. 队列和栈
+```java
+// 栈：用 Deque 接口，推荐 ArrayDeque
+Deque<Integer> stack = new ArrayDeque<>();
+stack.push(1);  // 入栈
+stack.push(2);
+stack.pop();    // 出栈，返回 2（后进先出）
+
+// 队列：用 Queue 接口
+Queue<Integer> queue = new LinkedList<>();
+queue.offer(1);  // 入队
+queue.offer(2);
+queue.poll();    // 出队，返回 1（先进先出）
+```
+2. 双端队列
+```java
+//Deque实际上是双端队列
+Deque<String> deque = new ArrayDeque<>();
+
+// 当栈用
+deque.push("a");
+deque.push("b");
+deque.pop();  // 返回 "b"
+
+// 当队列用
+deque.offerLast("x");
+deque.offerLast("y");
+deque.pollFirst();  // 返回 "x"
+```
+3. 阻塞队列
+```java
+BlockingQueue<String> queue = new ArrayBlockingQueue<>(100);
+// 生产者线程
+new Thread(() -> {
+    while (true) {
+        queue.put(produceData());  // 满了自动阻塞
+    }
+}).start();
+
+// 消费者线程
+new Thread(() -> {
+    while (true) {
+        String data = queue.take();  // 空了自动阻塞
+        consume(data);
+    }
+}).start();
+```
+## 35.Java 的 Optional 类是什么？它有什么用？
+1. 用来包装可能为空的值
+2. 作用于方法返回值
+```java
+//用Optional前
+User user = userService.getUser(id);
+if (user != null) {
+    Address address = user.getAddress();
+    if (address != null) {
+        String city = address.getCity();
+        if (city != null) {
+            System.out.println(city);
+        }
+    }
+}
+//用Optional后
+Optional.ofNullable(userService.getUser(id))
+        .map(User::getAddress)
+        .map(Address::getCity)
+        .ifPresent(System.out::println);
+//函数返回值类型为Optional用flatMap,否则用map返回时加上Optional
+```
+### 核心API
+#### 创建Optional
+1. Optional.of(value)  包装非空值，传null抛出空指针异常  放确定为空的值
+2. Optional.ofNullable(value) 包装可能为空的值，传null返回空Optional  放可能为空的值
+3. Optional.empty() 创建一个空的Optional  表示没有值
+```java
+//取值
+Optional<String> opt = Optional.ofNullable(getValue());
+
+// 直接取，空了抛 NoSuchElementException（不推荐）
+opt.get();
+
+// 空了返回默认值
+opt.orElse("default");
+
+// 空了调用 Supplier 生成默认值
+// 1.orElse：不管 Optional 有没有值，createDefault() 都会执行
+opt.orElse(createDefault());
+
+// 2. orElseGet：只有 Optional 为空时才会执行 Supplier
+opt.orElseGet(() -> createDefault());
+
+// 空了抛自定义异常
+opt.orElseThrow(() -> new BusinessException("not found"));
+```
 
 
 # JVM基础
