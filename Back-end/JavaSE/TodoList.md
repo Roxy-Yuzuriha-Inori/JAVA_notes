@@ -829,6 +829,17 @@ Optional.ofNullable(userService.getUser(id))
         .map(Address::getCity)
         .ifPresent(System.out::println);
 //函数返回值类型为Optional用flatMap,否则用map返回时加上Optional
+
+//ifPresent
+Optional<String> opt = Optional.ofNullable(name);
+
+opt.ifPresent(value -> {
+    System.out.println(value);
+});
+//等价于
+if (name != null) {
+    System.out.println(name);
+}
 ```
 ### 核心API
 #### 创建Optional
@@ -854,6 +865,20 @@ opt.orElseGet(() -> createDefault());
 
 // 空了抛自定义异常
 opt.orElseThrow(() -> new BusinessException("not found"));
+```
+```java
+//java9其他API
+// ifPresentOrElse：有值执行第一个，没值执行第二个
+opt.ifPresentOrElse(
+    value -> System.out.println(value),
+    () -> System.out.println("empty")
+);
+
+// or：空的时候返回另一个 Optional
+opt.or(() -> Optional.of("fallback"));
+
+// stream：转成 Stream，空的就是空流
+opt.stream().forEach(System.out::println);
 ```
 
 
