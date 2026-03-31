@@ -1,13 +1,71 @@
-# 匿名对象类原理
-# TreeSet和TreeMap
-# 线程同步
-# 网络编程
-# 反射
-在REST风格的URL中，通过四种请求方式，来操作数据的增删改查。 
-- GET ：  查询
-- POST ：新增
-- PUT ：  修改
-- DELETE ：删除
+1. @TableField的用法
+```java
+ /*
+ value=""  对应表中列名
+ exist = false  表明该字段不在表中
+ fill = FieldFill.INSERT  自动填充，需要实现 MetaObjectHandler
+ */
+@TableField(value="user_id"，exist = false)
+ private Long id;
+```
+2. @EnableEncryptableProperties
+加密相关，默认自动开启
+3. @ConfigurationPropertiesScan
+配置文件注入的类不用写@Component
+4. Swagger
+5. Collections.emptyList(), CollectionUtils.containsAny，Collectors.groupingBy
+返回不可变的空 List；判断两者是否有交集（可用stream代替）；
+6. 全局异常拦截器  常见异常的输出日志信息方法 @Valid的MethodArgumentNotValidException异常
+7. 什么时候加事务@Transactional
+8. NPE预防x ：是包装类型 → 永远不要直接 !x、x && y；比较字符串 → 永远写 "xxx".equals(x)；判断空字符串 → 永远用 isEmpty / isBlank；判断集合空 → 永远用 CollectionUtils.isEmpty(list)；外部接口返回的对象字段 → 默认全部可能为 null
+9.  线程池ThreadPoolTaskExecutor和@Async
+10. 将前端传来的对象build另外一个对象，脱敏取关键值
+11. Spring Security的passwordEncoder 
+12. Caffeine  二级缓存 + Redis
+13. LDAP 认证基础
+14. 本地锁 vs 分布式锁
+15. TransactionTemplate 
+16. 分组校验 validator.validate()
+17. Apache Commons Range 做区间判断
+
+18. 
+19. # lombok
+# JPA
+# 日期API
+# Async 注解原理
+# bean的循环依赖
+
+# hutool工具类常用方法
+# Digest spring自带加密方法类
+
+# 数据安全
+# AspectJ
+# JWT问题实践
+# SSO单点登录实践
+# SSO跨域图解
+# JDBC-Mybatis(TypeHandlers（类型处理器）,objectFactory,plugins)
+# Optional实践
+# Mybatis实战
+
+# SpringSecurity,maven 2h，MybatisPus 1h+整理
+
+# Mysql 21h
+# linux 27h
+# 设计模式 33h
+# Redis 42h
+# redux 
+# MQ,Kafka 12h
+# Nginx 4h
+# 微服务 44h
+# Docker K8s  8h
+# CI/CD
+# 并发编程 32h
+# JVM  68h
+# 高可用高并发
+# 分布式
+
+# Easy Excel
+
 # Java基础
 ## 1.Java 中的序列化和反序列化是什么？
 1. 序列化（what）：将Java对象转成二进制字节流
@@ -29,8 +87,8 @@ public class User implements Serializable {
 
 ## 2.Java 中 Exception 和 Error 有什么区别？
 1. 常见异常和错误https://pic.code-nav.cn/mianshiya/question_picture/1814905001808924674/j0JcqCQh_image_mianshiya.webp   
-2. 编译异常（checked Exception）可能出现的异常
-3. 运行异常（unchecked Exception）编写错误导致的异常
+2. 编译异常（checked Exception）可能出现的异常，比如数据库连接没设定
+3. 运行异常（unchecked Exception）编写错误导致的异常，比如bug,空指针异常
 4. 不会去捕获Error，因为JVM出现问题不可靠了，框架开发为了主线程不挂掉可能捕获Error
 5. 不要在finally里面进行return，因为只能有一个return，会代替原来的return
 
@@ -880,10 +938,130 @@ opt.or(() -> Optional.of("fallback"));
 // stream：转成 Stream，空的就是空流
 opt.stream().forEach(System.out::println);
 ```
-## Java 的 I/O 流是什么？
+## 36.Java 的 I/O 流是什么？
 ![I/O 流](5_IO流.md)<br/>
 ![I/O 流的体系](./assets/IO流.png)
 
+## 37.什么是 Java 的网络编程？
+![网络编程](6_网络编程.md)<br/>
+
+## 38.Java 中的基本数据类型有哪些？
+1. 整数：byte(1)、short(2)、int(4)、long(8)
+2. 小数：float(4)、double(8)
+3. 字符：char(2)
+4. 布尔：boolean()
+
+## 39.什么是 Java 中的迭代器（Iterator）？
+1. 用于遍历集合
+2. for each是对Iterator的封装，调用list.remove会报错，因为没用Iterator.remove
+3. remove安全删除，不会报错ConcurrentModificationException，因为Fail-Fast，在使用 Iterator 遍历集合时，如果集合结构被非 Iterator 自身修改，就会抛出异常。
+4. listIterator双向遍历
+```java
+List<String> list = new ArrayList<>(Arrays.asList("A", "B", "C"));
+Iterator<String> it = list.iterator();
+//hasNext是否有下一个
+while (it.hasNext()) {
+    //next取出下一个
+    String item = it.next();
+    if ("B".equals(item)) {
+        // remove安全删除，不会报错
+        it.remove();  
+    }
+}
+```
+```java
+// listIterator双向遍历
+List<String> list = new ArrayList<>(Arrays.asList("A", "B", "C"));
+ListIterator<String> it = list.listIterator();
+
+// 正向遍历
+while (it.hasNext()) {
+    System.out.println(it.next());
+}
+
+// 反向遍历
+while (it.hasPrevious()) {
+    System.out.println(it.previous());
+}
+
+set(E e) //替换元素
+add(E e) //插入元素
+nextIndex()/previousIndex() //获取索引
+```
+## 40.Java 中的访问修饰符有哪些？
+| 访问修饰符 | 同一个类 | 同一个包 | 子类（不同包） | 其他包 |
+|------------|----------|----------|----------------|--------|
+| public     | ✅       | ✅       | ✅             | ✅     |
+| protected  | ✅       | ✅       | ✅             | ❌     |
+| 默认(default) | ✅    | ✅       | ❌             | ❌     |
+| private    | ✅       | ❌       | ❌             | ❌     |
+
+## 41. Java 中 wait() 和 sleep() 的区别？ 
+1. wait() 是 Object 的方法，用于线程之间的通信，必须在 synchronized 中调用，并且会释放对象锁
+2. sleep() 是 Thread 的静态方法，用于让线程休眠，不需要同步块，也不会释放锁
+3. wait() 依赖 notify 唤醒，sleep() 到时间自动恢复
+
+## 42.什么是 BIO、NIO、AIO？
+1. BIO 是同步阻塞 I/O，一个连接对应一个线程，并发能力低；
+2. NIO 是同步非阻塞 I/O，通过 Selector 实现多路复用，一个线程可处理多个连接；
+3. AIO 是异步非阻塞 I/O，I/O 操作由系统异步完成，通过回调通知结果，并发能力最高。
+
+## 43.NIO
+### 什么是Selector
+多路复用器，一个Selector监听多个Channel的IO事件<br/>
+1. 连接完成OP_CONNECT
+2. 可读OP_READ
+3. 可写OP_WRITE
+4. 接收连接OP_ACCEPT
+```java
+// 1. 创建 Selector
+Selector selector = Selector.open();
+
+// 2. Channel 必须设置成非阻塞
+channel.configureBlocking(false);
+
+// 3. 注册到 Selector，声明感兴趣的事件
+SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
+
+// 4. 事件循环
+while (true) {
+    int readyNum = selector.select();  // 阻塞等待事件
+    if (readyNum == 0) continue;
+    
+    Set<SelectionKey> selectedKeys = selector.selectedKeys();
+    Iterator<SelectionKey> it = selectedKeys.iterator();
+    while (it.hasNext()) {
+        //SelectionKey保存Selector和Channel之间的关系
+        SelectionKey k = it.next();
+        if (k.isAcceptable()) {
+            // 处理新连接
+        } else if (k.isReadable()) {
+            // 处理读事件
+        } else if (k.isWritable()) {
+            // 处理写事件
+        }
+        it.remove();  // 必须手动移除，否则下次还会处理
+    }
+}
+```
+### 什么是Channel
+Channel 是 NIO 中的数据通道，负责与外部设备进行数据读写，与Buffer绑定<br/>
+Channel类型与用途<br/>
+1. FileChannel   文件I/O
+2. SocketChannel    TCP 客户端
+3. ServerSocketChannel   TCP 服务端
+4. DatagramChannel    UDP
+
+## 44.PO、VO、BO、DTO、DAO、POJO 有什么区别？
+| 名称 | 全称 | 所在层 | 主要作用 |
+|------|------|--------|----------|
+| PO | Persistent Object | 持久层 | 与数据库表一一对应 |
+| DTO | Data Transfer Object | 接口/传输层 | 数据传输 |
+| VO | View Object | 表现层 | 前端展示 |
+| BO | Business Object | 业务层 | 业务逻辑处理 |
+| POJO | Plain Old Java Object | 通用 | 无特殊职责的普通 Java 对象 |
+### 调用顺序
+VO-DTO-BO-PO
 
 # JVM基础
 ## 编译，编译型与解释型语言
@@ -908,7 +1086,7 @@ opt.stream().forEach(System.out::println);
 ### Verification（验证）
 对二进制字节流进行校验
 ### Preparation（准备）
-为静态变量（static 关键字修饰的）分配空间，赋默认值
+为静态变量（static 关键字修饰的）分配空间，赋默认值。静态方法有入口地址而实例方法得new之后才有入口地址
 ### Resolution（解析）
 1. 将常量池中的符号引用转化为直接引用。
 2. 符号引用：用符号代表引用关系
