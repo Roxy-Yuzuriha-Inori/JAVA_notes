@@ -143,4 +143,21 @@ scan 索引扫描 对应 index
 3. 空间大（二级索引叶子节点重复存主键id）
 
 
+## 14.B+树中查询数据
+index seek : 树查 + 页内二分 
+Index Scan : 跳过树 → 顺序扫页
+### Buffer Pool
+Buffer Pool 是 InnoDB 在内存中的缓存区，用来缓存 Page（页），减少磁盘 IO，让查询尽量在内存完成。
+
+## 15.为什么使用B+树作为索引结构
+磁盘IO次数少，存的多
+https://www.mianshiya.com/bank/1791003439968264194/question/1780933295475814402#heading-11
+
+## 16.MySQL 中的日志类型有哪些？binlog、redo log 和 undo log 的作用和区别是什么？
+redo log:记录数据在页的修改，保证数据不丢失
+undo log:记录旧值，用于回滚
+binlog:记录sql操作，用于主从同步
+https://www.mianshiya.com/bank/1791003439968264194/question/1772575207802904578#heading-2
+
+## 
 
