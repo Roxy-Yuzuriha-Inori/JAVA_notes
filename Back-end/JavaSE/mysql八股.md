@@ -162,4 +162,23 @@ binlog:记录sql操作，用于主从同步，Server层日志，追加写
 顺序：先改内存数据，然后写redo日志，再去修改磁盘
 
 ## 17.MySQL事务是怎么实现的
+事务 AIDC
+redo log:保证持久性
+undo log:保证原子性
+锁：保证隔离性
+MCVV：保证隔离性的读写并发
+一致性：由其他性共同实现
+### redo log
+WAL策略（Write ahead logging）：先写日志再写数据
+两个指针，write pos指向日志写到哪了，checkpoint指向已经刷盘的位置，两指针中间是待刷盘的脏数据
+
+1.整个顺序  2.fsync是什么  3.innodb_flush_log_at_trx_commit是什么
+事务执行 → 生成 redo log → 写到 redo log buffer（内存）
+
+
+
+## 临时设置环境变量
+$env:JIB_USERNAME="clu57"
+$env:JIB_PASSWORD="xxx"
+
   
